@@ -17,6 +17,9 @@ import {
   Briefcase,
   Heart,
   Star,
+  ArrowUpRight,
+  Lightbulb,
+  BarChart3,
   TrendingUp,
 } from "lucide-react";
 import {
@@ -137,6 +140,64 @@ const initialUnis = [
   { name: "TU Delft", country: "Нидерланды", priority: "Target" },
 ];
 
+const strengthCategories = [
+  { name: "Academics", value: 92, icon: GraduationCap },
+  { name: "Extracurriculars", value: 70, icon: Heart },
+  { name: "Essays", value: 45, icon: FileText },
+  { name: "Recommendations", value: 60, icon: Users },
+];
+
+type Compare = { label: string; you: number; avg: number; display: (n: number) => string };
+
+const uniComparisons: {
+  name: string;
+  country: string;
+  priority: string;
+  chance: number;
+  verdict: string;
+  rows: Compare[];
+}[] = [
+  {
+    name: "MIT",
+    country: "США",
+    priority: "Reach",
+    chance: 18,
+    verdict: "Сильная академика, не хватает research-проекта",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1540, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.95, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 8, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 5, display: (n) => `${n}` },
+    ],
+  },
+  {
+    name: "ETH Zürich",
+    country: "Швейцария",
+    priority: "Target",
+    chance: 42,
+    verdict: "Дотягиваешь по профилю, усиль олимпиады по математике",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1480, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.8, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 5, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 4, display: (n) => `${n}` },
+    ],
+  },
+  {
+    name: "TU Delft",
+    country: "Нидерланды",
+    priority: "Target",
+    chance: 64,
+    verdict: "Сильный кандидат — сфокусируйся на мотивационном письме",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1420, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.6, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 4, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 2, display: (n) => `${n}` },
+    ],
+  },
+];
+
 function impactColor(impact: string) {
   if (impact === "high") return "bg-[color:var(--brand-100)] text-[color:var(--brand-500)]";
   if (impact === "medium") return "bg-secondary text-secondary-foreground";
@@ -215,6 +276,9 @@ function PortfolioPage() {
           <AddItemDialog />
         </div>
       </div>
+
+      {/* Profile Strength Score */}
+      <ProfileStrengthCard />
 
       {/* AI insight banner */}
       <div
@@ -321,6 +385,19 @@ function PortfolioPage() {
               ))}
             </div>
           </Card>
+        </div>
+      </Section>
+
+      {/* University Comparison */}
+      <Section
+        icon={BarChart3}
+        title="Сравнение с целевыми университетами"
+        subtitle="Твой профиль vs средний поступивший"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {uniComparisons.map((u) => (
+            <UniComparisonCard key={u.name} uni={u} />
+          ))}
         </div>
       </Section>
 
@@ -575,5 +652,212 @@ function AddItemDialog() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* --- Profile Strength + Comparison --- */
+
+function barColor(value: number) {
+  if (value >= 80) return "text-emerald-600";
+  if (value >= 55) return "text-amber-600";
+  return "text-rose-600";
+}
+
+function ProfileStrengthCard() {
+  const score = 78;
+  const radius = 64;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-center">
+        {/* Radial */}
+        <div className="lg:col-span-2 flex flex-col items-center justify-center">
+          <div className="relative h-44 w-44">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="strengthGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#97C3F2" />
+                  <stop offset="50%" stopColor="#4694E7" />
+                  <stop offset="100%" stopColor="#1866B9" />
+                </linearGradient>
+              </defs>
+              <circle
+                cx="80"
+                cy="80"
+                r={radius}
+                stroke="hsl(var(--muted))"
+                strokeWidth="12"
+                fill="none"
+                className="opacity-60"
+              />
+              <circle
+                cx="80"
+                cy="80"
+                r={radius}
+                stroke="url(#strengthGrad)"
+                strokeWidth="12"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                className="transition-[stroke-dashoffset] duration-700"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-4xl font-semibold tracking-tight">{score}</div>
+              <div className="text-xs text-muted-foreground">/ 100</div>
+              <div className="text-[11px] font-medium text-muted-foreground mt-1">
+                Сила профиля
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+            <TrendingUp className="h-3.5 w-3.5" /> +6 за 2 недели
+          </div>
+        </div>
+
+        {/* Categories */}
+        <div className="lg:col-span-3 space-y-3">
+          {strengthCategories.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div key={c.name} className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{c.name}</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${barColor(c.value)}`}>
+                    {c.value}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${c.value}%`,
+                      background: "var(--gradient-brand)",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Gap analysis */}
+      <div className="mt-6 pt-5 border-t border-border flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div
+            className="h-9 w-9 rounded-lg grid place-items-center text-white shrink-0"
+            style={{ background: "var(--gradient-deep)" }}
+          >
+            <Lightbulb className="h-4 w-4" />
+          </div>
+          <div className="text-sm">
+            <span className="text-muted-foreground">До среднего профиля в </span>
+            <span className="font-semibold">MIT</span>
+            <span className="text-muted-foreground"> не хватает: </span>
+            <span className="font-medium">+1 research project</span>
+            <span className="text-muted-foreground"> · </span>
+            <span className="font-medium">+40 SAT EBRW</span>
+            <span className="text-muted-foreground"> · </span>
+            <span className="font-medium">+1 national award</span>
+          </div>
+        </div>
+        <Button variant="outline" className="gap-1.5">
+          Открыть план действий <ArrowUpRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function CompareRow({ row }: { row: Compare }) {
+  const ratio = Math.min(row.you / row.avg, 1.2);
+  const youPct = Math.min(ratio * 83, 100); // scale so 1.2x ~= 100%
+  const avgPct = 83;
+  const diff = row.you - row.avg;
+  const tone =
+    diff >= 0
+      ? "text-emerald-600"
+      : Math.abs(diff) / row.avg < 0.08
+        ? "text-amber-600"
+        : "text-rose-600";
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="font-medium text-muted-foreground">{row.label}</span>
+        <span className={`font-semibold ${tone}`}>
+          {row.display(row.you)}{" "}
+          <span className="text-muted-foreground font-normal">
+            / {row.display(row.avg)}
+          </span>
+        </span>
+      </div>
+      <div className="relative h-1.5 rounded-full bg-muted overflow-hidden">
+        {/* avg marker */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-foreground/40 z-10"
+          style={{ left: `${avgPct}%` }}
+        />
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${youPct}%`,
+            background: "var(--gradient-brand)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function UniComparisonCard({
+  uni,
+}: {
+  uni: (typeof uniComparisons)[number];
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-[var(--shadow-soft)] transition-all">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-semibold text-sm">{uni.name}</div>
+          <div className="text-[11px] text-muted-foreground">{uni.country}</div>
+          <Badge variant="secondary" className="mt-2 text-[10px]">
+            {uni.priority}
+          </Badge>
+        </div>
+        <div className="text-right">
+          <div className="text-[10px] text-muted-foreground">Шанс</div>
+          <div
+            className={`text-xl font-semibold ${
+              uni.chance >= 50
+                ? "text-emerald-600"
+                : uni.chance >= 25
+                  ? "text-amber-600"
+                  : "text-rose-600"
+            }`}
+          >
+            {uni.chance}%
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-2.5">
+        {uni.rows.map((r) => (
+          <CompareRow key={r.label} row={r} />
+        ))}
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-border flex items-start gap-2 text-[11px] text-muted-foreground">
+        <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+        <span>{uni.verdict}</span>
+      </div>
+    </div>
   );
 }
