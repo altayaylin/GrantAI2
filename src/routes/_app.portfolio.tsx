@@ -140,6 +140,64 @@ const initialUnis = [
   { name: "TU Delft", country: "Нидерланды", priority: "Target" },
 ];
 
+const strengthCategories = [
+  { name: "Academics", value: 92, icon: GraduationCap },
+  { name: "Extracurriculars", value: 70, icon: Heart },
+  { name: "Essays", value: 45, icon: FileText },
+  { name: "Recommendations", value: 60, icon: Users },
+];
+
+type Compare = { label: string; you: number; avg: number; display: (n: number) => string };
+
+const uniComparisons: {
+  name: string;
+  country: string;
+  priority: string;
+  chance: number;
+  verdict: string;
+  rows: Compare[];
+}[] = [
+  {
+    name: "MIT",
+    country: "США",
+    priority: "Reach",
+    chance: 18,
+    verdict: "Сильная академика, не хватает research-проекта",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1540, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.95, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 8, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 5, display: (n) => `${n}` },
+    ],
+  },
+  {
+    name: "ETH Zürich",
+    country: "Швейцария",
+    priority: "Target",
+    chance: 42,
+    verdict: "Дотягиваешь по профилю, усиль олимпиады по математике",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1480, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.8, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 5, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 4, display: (n) => `${n}` },
+    ],
+  },
+  {
+    name: "TU Delft",
+    country: "Нидерланды",
+    priority: "Target",
+    chance: 64,
+    verdict: "Сильный кандидат — сфокусируйся на мотивационном письме",
+    rows: [
+      { label: "SAT", you: 1500, avg: 1420, display: (n) => `${n}` },
+      { label: "GPA", you: 4.92, avg: 4.6, display: (n) => n.toFixed(2) },
+      { label: "Activities", you: 4, avg: 4, display: (n) => `${n}` },
+      { label: "Awards", you: 3, avg: 2, display: (n) => `${n}` },
+    ],
+  },
+];
+
 function impactColor(impact: string) {
   if (impact === "high") return "bg-[color:var(--brand-100)] text-[color:var(--brand-500)]";
   if (impact === "medium") return "bg-secondary text-secondary-foreground";
