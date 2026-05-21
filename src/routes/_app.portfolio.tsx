@@ -277,6 +277,9 @@ function PortfolioPage() {
         </div>
       </div>
 
+      {/* Profile Strength Score */}
+      <ProfileStrengthCard />
+
       {/* AI insight banner */}
       <div
         className="rounded-2xl p-5 text-white flex items-center justify-between gap-4 shadow-[var(--shadow-glow)]"
