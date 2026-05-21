@@ -16,7 +16,6 @@ import {
   Users,
   Briefcase,
   Heart,
-  X,
   Star,
   TrendingUp,
 } from "lucide-react";
