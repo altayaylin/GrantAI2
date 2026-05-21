@@ -17,6 +17,9 @@ import {
   Briefcase,
   Heart,
   Star,
+  ArrowUpRight,
+  Lightbulb,
+  BarChart3,
   TrendingUp,
 } from "lucide-react";
 import {
