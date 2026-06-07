@@ -66,6 +66,14 @@ const documents = [
 ];
 
 function ProfilePage() {
+  const { list: targets } = useTargetUnis();
+  const targetUnis = targets
+    .map((t) => {
+      const u = UNIVERSITIES.find((x) => x.id === t.id);
+      return u ? { ...u, level: t.level } : null;
+    })
+    .filter(Boolean) as (typeof UNIVERSITIES[number] & { level: keyof typeof LEVEL_META })[];
+
   return (
     <div className="space-y-6">
       {/* Header card */}
