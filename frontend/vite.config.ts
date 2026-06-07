@@ -10,11 +10,22 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 const preset = process.env.VERCEL ? "vercel" : (process.env.NITRO_PRESET || "cloudflare-module");
 
+const isVercel = preset === "vercel";
+
 export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
   nitro: {
     preset,
+    ...(isVercel
+      ? {
+          output: {
+            dir: ".vercel/output",
+            serverDir: ".vercel/output/functions/__server.func",
+            publicDir: ".vercel/output/static",
+          },
+        }
+      : {}),
   },
 });
