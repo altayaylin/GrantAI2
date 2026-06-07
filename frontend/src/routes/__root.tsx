@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -117,6 +118,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster position="top-center" richColors />
+        <Analytics />
         <Scripts />
       </body>
     </html>
