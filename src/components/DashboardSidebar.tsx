@@ -12,7 +12,7 @@ import {
 
 const nav = [
   { title: "Обзор", url: "/", icon: LayoutDashboard },
-  { title: "Портфолио", url: "/portfolio", icon: FolderKanban },
+  { title: "Профиль", url: "/portfolio", icon: FolderKanban },
   { title: "Дедлайны", url: "/deadlines", icon: CalendarClock },
   { title: "Университеты", url: "/universities", icon: GraduationCap },
   { title: "AI оценка", url: "/ai-review", icon: Sparkles },
