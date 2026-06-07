@@ -10,7 +10,7 @@ import {
   Clock,
 } from "lucide-react";
 
-export const Route = createFileRoute("/_app/")({
+export const Route = createFileRoute("/_app/dashboard")({
   component: Overview,
 });
 

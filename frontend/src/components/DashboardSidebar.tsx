@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const nav = [
-  { title: "Обзор", url: "/", icon: LayoutDashboard },
+  { title: "Обзор", url: "/dashboard", icon: LayoutDashboard },
   { title: "Портфолио", url: "/portfolio", icon: FolderKanban },
   { title: "Дедлайны", url: "/deadlines", icon: CalendarClock },
   { title: "Университеты", url: "/universities", icon: GraduationCap },
@@ -30,7 +30,7 @@ export function DashboardSidebar() {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="px-6 py-6 border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to="/dashboard" className="flex items-center gap-2.5">
           <div
             className="h-9 w-9 rounded-xl grid place-items-center text-white font-bold shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-brand)" }}
