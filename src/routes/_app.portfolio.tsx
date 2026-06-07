@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UNIVERSITIES, useTargetUnis, LEVEL_META } from "@/lib/target-unis";
-import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_app/portfolio")({
   component: ProfilePage,
