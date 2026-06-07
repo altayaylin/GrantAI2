@@ -128,7 +128,10 @@ function ProfilePage() {
 
         <Card title="Целевые страны" icon={Globe2}>
           <div className="flex flex-wrap gap-2">
-            {student.countries.map((c) => (
+            {(targetUnis.length > 0
+              ? Array.from(new Set(targetUnis.map((u) => u.country)))
+              : student.countries
+            ).map((c) => (
               <div
                 key={c}
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm"
@@ -137,12 +140,74 @@ function ProfilePage() {
                 {c}
               </div>
             ))}
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
-              <Plus className="h-3.5 w-3.5" /> Добавить
-            </button>
+            {targetUnis.length === 0 && (
+              <button className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
+                <Plus className="h-3.5 w-3.5" /> Добавить
+              </button>
+            )}
           </div>
+          {targetUnis.length > 0 && (
+            <div className="text-[11px] text-muted-foreground mt-3">
+              Сформировано из выбранных университетов
+            </div>
+          )}
         </Card>
       </div>
+
+      {/* Target universities */}
+      <Card
+        title="Целевые университеты"
+        icon={GraduationCap}
+        action="Выбрать ещё"
+        actionTo="/universities"
+      >
+        {targetUnis.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center">
+            <GraduationCap className="h-8 w-8 mx-auto text-muted-foreground/60 mb-3" />
+            <div className="font-medium text-sm">Пока нет целевых вузов</div>
+            <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-sm mx-auto">
+              Выбери университеты на странице «Университеты» — они появятся здесь и помогут
+              AI подбирать активности и эссе.
+            </p>
+            <Button asChild size="sm">
+              <Link to="/universities">
+                Перейти к выбору <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {targetUnis.map((u) => {
+              const meta = LEVEL_META[u.level];
+              return (
+                <div
+                  key={u.id}
+                  className="rounded-xl border border-border p-4 hover:border-primary/40 hover:shadow-[var(--shadow-soft)] transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate">{u.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {u.city}, {u.country}
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md border ${meta.tone}`}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-2">
+                    <span>Прием {u.acceptance}</span>
+                    <span>·</span>
+                    <span>Ср. SAT {u.avgSAT}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
 
       {/* Scores */}
       <Card title="Академические показатели" icon={Sparkles}>
