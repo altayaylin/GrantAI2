@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppUniversitiesRouteImport } from './routes/_app.universities'
 import { Route as AppPortfolioRouteImport } from './routes/_app.portfolio'
 
 const AppRoute = AppRouteImport.update({
@@ -22,6 +23,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUniversitiesRoute = AppUniversitiesRouteImport.update({
+  id: '/universities',
+  path: '/universities',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPortfolioRoute = AppPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -31,23 +37,26 @@ const AppPortfolioRoute = AppPortfolioRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/portfolio': typeof AppPortfolioRoute
+  '/universities': typeof AppUniversitiesRoute
 }
 export interface FileRoutesByTo {
   '/portfolio': typeof AppPortfolioRoute
+  '/universities': typeof AppUniversitiesRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/portfolio': typeof AppPortfolioRoute
+  '/_app/universities': typeof AppUniversitiesRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/portfolio'
+  fullPaths: '/' | '/portfolio' | '/universities'
   fileRoutesByTo: FileRoutesByTo
-  to: '/portfolio' | '/'
-  id: '__root__' | '/_app' | '/_app/portfolio' | '/_app/'
+  to: '/portfolio' | '/universities' | '/'
+  id: '__root__' | '/_app' | '/_app/portfolio' | '/_app/universities' | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -70,6 +79,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/universities': {
+      id: '/_app/universities'
+      path: '/universities'
+      fullPath: '/universities'
+      preLoaderRoute: typeof AppUniversitiesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/portfolio': {
       id: '/_app/portfolio'
       path: '/portfolio'
@@ -82,11 +98,13 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppPortfolioRoute: typeof AppPortfolioRoute
+  AppUniversitiesRoute: typeof AppUniversitiesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppPortfolioRoute: AppPortfolioRoute,
+  AppUniversitiesRoute: AppUniversitiesRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
