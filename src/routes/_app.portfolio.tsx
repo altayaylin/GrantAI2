@@ -304,13 +304,29 @@ function Card({
   title,
   icon: Icon,
   action,
+  actionTo,
   children,
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   action?: string;
+  actionTo?: string;
   children: React.ReactNode;
 }) {
+  const ActionBtn = action ? (
+    <Button variant="ghost" size="sm" className="text-primary hover:text-primary" asChild={!!actionTo}>
+      {actionTo ? (
+        <Link to={actionTo}>
+          <Plus className="h-4 w-4" /> {action}
+        </Link>
+      ) : (
+        <>
+          <Plus className="h-4 w-4" /> {action}
+        </>
+      )}
+    </Button>
+  ) : null;
+
   return (
     <section className="rounded-2xl border border-border bg-card p-5 md:p-6 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between mb-4">
@@ -320,11 +336,7 @@ function Card({
           </div>
           <h2 className="font-semibold">{title}</h2>
         </div>
-        {action && (
-          <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
-            <Plus className="h-4 w-4" /> {action}
-          </Button>
-        )}
+        {ActionBtn}
       </div>
       {children}
     </section>
