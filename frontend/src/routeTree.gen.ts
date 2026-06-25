@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppUniversitiesRouteImport } from './routes/_app.universities'
 import { Route as AppPortfolioRouteImport } from './routes/_app.portfolio'
+import { Route as AppOpportunitiesRouteImport } from './routes/_app.opportunities'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 
 const AuthRoute = AuthRouteImport.update({
@@ -40,6 +41,11 @@ const AppPortfolioRoute = AppPortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOpportunitiesRoute = AppOpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -50,6 +56,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AppDashboardRoute
+  '/opportunities': typeof AppOpportunitiesRoute
   '/portfolio': typeof AppPortfolioRoute
   '/universities': typeof AppUniversitiesRoute
 }
@@ -57,6 +64,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AppDashboardRoute
+  '/opportunities': typeof AppOpportunitiesRoute
   '/portfolio': typeof AppPortfolioRoute
   '/universities': typeof AppUniversitiesRoute
 }
@@ -66,20 +74,34 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/opportunities': typeof AppOpportunitiesRoute
   '/_app/portfolio': typeof AppPortfolioRoute
   '/_app/universities': typeof AppUniversitiesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/portfolio' | '/universities'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/opportunities'
+    | '/portfolio'
+    | '/universities'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/portfolio' | '/universities'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/opportunities'
+    | '/portfolio'
+    | '/universities'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/auth'
     | '/_app/dashboard'
+    | '/_app/opportunities'
     | '/_app/portfolio'
     | '/_app/universities'
   fileRoutesById: FileRoutesById
@@ -127,6 +149,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPortfolioRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/opportunities': {
+      id: '/_app/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof AppOpportunitiesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -139,12 +168,14 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppOpportunitiesRoute: typeof AppOpportunitiesRoute
   AppPortfolioRoute: typeof AppPortfolioRoute
   AppUniversitiesRoute: typeof AppUniversitiesRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppOpportunitiesRoute: AppOpportunitiesRoute,
   AppPortfolioRoute: AppPortfolioRoute,
   AppUniversitiesRoute: AppUniversitiesRoute,
 }
