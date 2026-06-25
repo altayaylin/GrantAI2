@@ -1,56 +1,123 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { GraduationCap, MapPin, Search, Check, Star, Trophy } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { GraduationCap, MapPin, Search, Check, Star, Trophy, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UNIVERSITIES, useTargetUnis, LEVEL_META, type UniLevel } from "@/lib/target-unis";
+import { LEVEL_META, type UniLevel } from "@/lib/target-unis";
+import { api } from "@/lib/api";
+import { formatAcceptance, formatTuition, uniTags, uniBlurb, type University, type MyListItem } from "@/lib/types";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/universities")({
   component: UniversitiesPage,
 });
 
 function UniversitiesPage() {
-  const { list, toggle, setLevel } = useTargetUnis();
+  const qc = useQueryClient();
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState<string>("Все");
 
+  const { data: universities = [], isLoading, error } = useQuery({
+    queryKey: ["universities"],
+    queryFn: () => api.universities.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: myList = [] } = useQuery({
+    queryKey: ["my-list"],
+    queryFn: () => api.universities.myList(),
+  });
+
+  const addMutation = useMutation({
+    mutationFn: ({ id, category }: { id: string; category: UniLevel }) =>
+      api.universities.add(id, category),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ["my-list"] });
+      const uni = universities.find((u) => u.id === id);
+      toast.success(`${uni?.name ?? "Вуз"} добавлен в список`);
+    },
+    onError: () => toast.error("Не удалось добавить вуз"),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => api.universities.remove(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-list"] }),
+    onError: () => toast.error("Не удалось убрать вуз"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, category }: { id: string; category: UniLevel }) =>
+      api.universities.updateCategory(id, category),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-list"] }),
+  });
+
+  const chosen = useMemo<Map<string, UniLevel>>(() => {
+    const m = new Map<string, UniLevel>();
+    myList.forEach((item: MyListItem) => {
+      if (item.category) m.set(item.university_id, item.category as UniLevel);
+      else m.set(item.university_id, "match");
+    });
+    return m;
+  }, [myList]);
+
   const countries = useMemo(
-    () => ["Все", ...Array.from(new Set(UNIVERSITIES.map((u) => u.country)))],
-    [],
+    () => ["Все", ...Array.from(new Set(universities.map((u) => u.country))).sort()],
+    [universities],
   );
 
-  const filtered = UNIVERSITIES.filter((u) => {
+  const filtered = universities.filter((u) => {
+    const q = query.toLowerCase();
     const matchesQ =
       !query ||
-      u.name.toLowerCase().includes(query.toLowerCase()) ||
-      u.country.toLowerCase().includes(query.toLowerCase()) ||
-      u.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()));
+      u.name.toLowerCase().includes(q) ||
+      u.country.toLowerCase().includes(q) ||
+      u.majors.some((t) => t.toLowerCase().includes(q));
     const matchesC = country === "Все" || u.country === country;
     return matchesQ && matchesC;
   });
 
-  const chosen = new Map(list.map((t) => [t.id, t.level]));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32 gap-3 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" /> Загружаем университеты…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-32 gap-3 text-destructive">
+        <AlertCircle className="h-5 w-5" /> Ошибка загрузки: бэкенд недоступен.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Hero */}
       <section
-        className="rounded-2xl p-6 md:p-8 text-white"
-        style={{ background: "var(--gradient-deep)" }}
+        className="relative overflow-hidden rounded-[32px] p-8 lg:p-12 text-white shadow-2xl"
+        style={{ background: "linear-gradient(135deg, #0F3269 0%, #1A4D9C 100%)" }}
       >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-semibold">Университеты</h1>
-            <p className="text-white/70 text-sm mt-1.5 max-w-xl">
-              Выбери целевые вузы — они появятся в твоём профиле и помогут AI подбирать
-              активности и эссе под их требования.
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+              <GraduationCap className="h-3 w-3" /> СПИСОК УНИВЕРСИТЕТОВ
+            </div>
+            <h1 className="font-display text-4xl font-extrabold lg:text-5xl leading-tight">
+              Университеты
+            </h1>
+            <p className="mt-4 text-base text-blue-100/80 leading-relaxed lg:text-lg">
+              {universities.length} вузов в базе. Добавляй в цели — они появятся в профиле и создадут дедлайны.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Stat label="Выбрано" value={list.length} />
-            <Stat label="Reach" value={list.filter((u) => u.level === "reach").length} />
-            <Stat label="Match" value={list.filter((u) => u.level === "match").length} />
-            <Stat label="Safety" value={list.filter((u) => u.level === "safety").length} />
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Stat label="ВЫБРАНО"  value={myList.length} />
+            <div className="h-10 w-px bg-white/10 hidden sm:block" />
+            <Stat label="REACH"  value={myList.filter((u: MyListItem) => u.category === "reach").length} />
+            <Stat label="MATCH"  value={myList.filter((u: MyListItem) => u.category === "match" || !u.category).length} />
+            <Stat label="SAFETY" value={myList.filter((u: MyListItem) => u.category === "safety").length} />
           </div>
         </div>
       </section>
@@ -62,7 +129,7 @@ function UniversitiesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Найти университет, страну или направление…"
+            placeholder="Найти университет, страну или специальность…"
             className="w-full h-10 pl-9 pr-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:border-primary transition-colors"
           />
         </div>
@@ -85,9 +152,9 @@ function UniversitiesPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((u) => {
+        {filtered.map((u: University) => {
           const level = chosen.get(u.id);
-          const selected = !!level;
+          const selected = chosen.has(u.id);
           return (
             <div
               key={u.id}
@@ -108,29 +175,32 @@ function UniversitiesPage() {
                   <div className="min-w-0">
                     <div className="font-semibold leading-tight truncate">{u.name}</div>
                     <div className="text-xs text-muted-foreground mt-0.5 inline-flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {u.city}, {u.country}
+                      <MapPin className="h-3 w-3" /> {u.country}
                     </div>
                   </div>
                 </div>
-                <Badge variant="outline" className="shrink-0 gap-1">
-                  <Star className="h-3 w-3" />#{u.ranking}
-                </Badge>
+                {u.qs_rank && (
+                  <Badge variant="outline" className="shrink-0 gap-1">
+                    <Star className="h-3 w-3" />#{u.qs_rank}
+                  </Badge>
+                )}
               </div>
 
-              <p className="text-sm text-muted-foreground leading-relaxed">{u.blurb}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{uniBlurb(u)}</p>
 
               <div className="grid grid-cols-3 gap-2 text-center">
-                <Mini label="Прием" value={u.acceptance} />
-                <Mini label="Ср. SAT" value={String(u.avgSAT)} />
-                <Mini label="Стоимость" value={u.tuition} />
+                <Mini label="Прием"    value={formatAcceptance(u.acceptance_rate)} />
+                <Mini label="SAT 75%"  value={u.sat_75th ? String(u.sat_75th) : "—"} />
+                <Mini label="Стоимость" value={formatTuition(u.tuition_usd)} />
               </div>
 
               <div className="flex flex-wrap gap-1.5">
-                {u.tags.map((t) => (
-                  <Badge key={t} variant="secondary" className="font-normal">
-                    {t}
-                  </Badge>
+                {uniTags(u).map((t) => (
+                  <Badge key={t} variant="secondary" className="font-normal">{t}</Badge>
                 ))}
+                {u.has_scholarship && (
+                  <Badge variant="secondary" className="font-normal bg-emerald-500/10 text-emerald-700">Стипендия</Badge>
+                )}
               </div>
 
               <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
@@ -138,12 +208,13 @@ function UniversitiesPage() {
                   <>
                     <LevelPicker
                       value={level!}
-                      onChange={(lv) => setLevel(u.id, lv)}
+                      onChange={(lv) => updateMutation.mutate({ id: u.id, category: lv })}
                     />
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => toggle(u.id)}
+                      onClick={() => removeMutation.mutate(u.id)}
+                      disabled={removeMutation.isPending}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       Убрать
@@ -152,10 +223,16 @@ function UniversitiesPage() {
                 ) : (
                   <Button
                     size="sm"
-                    onClick={() => toggle(u.id, "match")}
+                    onClick={() => addMutation.mutate({ id: u.id, category: "match" })}
+                    disabled={addMutation.isPending}
                     className="w-full"
                   >
-                    <Trophy className="h-4 w-4" /> Добавить в цели
+                    {addMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trophy className="h-4 w-4" />
+                    )}{" "}
+                    Добавить в цели
                   </Button>
                 )}
               </div>
@@ -164,7 +241,7 @@ function UniversitiesPage() {
         })}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && !isLoading && (
         <div className="text-center py-16 text-muted-foreground text-sm">
           Ничего не найдено — попробуй другой запрос.
         </div>
@@ -191,13 +268,7 @@ function Mini({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LevelPicker({
-  value,
-  onChange,
-}: {
-  value: UniLevel;
-  onChange: (v: UniLevel) => void;
-}) {
+function LevelPicker({ value, onChange }: { value: UniLevel; onChange: (v: UniLevel) => void }) {
   const levels: UniLevel[] = ["reach", "match", "safety"];
   return (
     <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/30">
@@ -209,9 +280,7 @@ function LevelPicker({
             onClick={() => onChange(lv)}
             title={LEVEL_META[lv].desc}
             className={`px-2.5 py-1 text-xs rounded-md font-medium inline-flex items-center gap-1 transition-colors ${
-              active
-                ? LEVEL_META[lv].tone + " border"
-                : "text-muted-foreground hover:text-foreground"
+              active ? LEVEL_META[lv].tone + " border" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {active && <Check className="h-3 w-3" />}

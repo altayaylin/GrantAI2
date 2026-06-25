@@ -34,12 +34,11 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div
-            className="h-9 w-9 rounded-xl grid place-items-center text-white font-bold transition-transform group-hover:scale-105"
-            style={{ background: "var(--gradient-brand)" }}
-          >
-            G
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="GrantAI Logo" 
+            className="h-9 w-9 object-contain rounded-xl transition-transform group-hover:scale-105" 
+          />
           <div className="leading-tight">
             <span className="font-display font-bold text-lg text-[var(--text-primary)]">
               GrantAI

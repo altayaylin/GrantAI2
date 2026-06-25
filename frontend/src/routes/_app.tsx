@@ -1,12 +1,40 @@
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
 function AppLayout() {
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
+
+  const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Алишер Н.";
+  const initials = name.charAt(0).toUpperCase();
+
   return (
     <div className="min-h-screen flex w-full bg-background">
       <DashboardSidebar />
@@ -23,17 +51,27 @@ function AppLayout() {
             <Bell className="h-4 w-4" />
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
           </button>
+          
           <div className="flex items-center gap-3 pl-3 border-l border-border">
             <div className="text-right leading-tight hidden sm:block">
-              <div className="text-sm font-medium">Алишер Н.</div>
-              <div className="text-xs text-muted-foreground">12 класс · CS</div>
+              <div className="text-sm font-medium">{name}</div>
+              <div className="text-xs text-muted-foreground">
+                {user ? "Студент" : "12 класс · CS"}
+              </div>
             </div>
             <div
               className="h-9 w-9 rounded-full grid place-items-center text-white font-medium text-sm"
               style={{ background: "var(--gradient-brand)" }}
             >
-              А
+              {initials}
             </div>
+            <button 
+              onClick={handleLogout}
+              className="ml-2 h-9 w-9 grid place-items-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+              title="Выйти"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </header>
         <main className="flex-1 p-6 lg:p-8">

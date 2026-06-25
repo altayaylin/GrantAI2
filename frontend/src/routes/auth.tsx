@@ -105,12 +105,7 @@ export function AuthPage() {
           {/* Logo element */}
           <div className="flex flex-col items-center text-center mb-8">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div
-                className="h-10 w-10 rounded-xl grid place-items-center text-white font-bold"
-                style={{ background: "var(--gradient-brand)" }}
-              >
-                G
-              </div>
+              <img src="/logo.png" alt="GrantAI Logo" className="h-10 w-10 object-contain rounded-xl" />
               <span className="font-display font-bold text-xl text-[var(--text-primary)]">
                 GrantAI
               </span>

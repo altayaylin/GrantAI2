@@ -10,12 +10,11 @@ export function Footer() {
           {/* Col 1: Brand */}
           <div className="md:col-span-1 flex flex-col items-start gap-4">
             <Link to="/" className="flex items-center gap-2 group">
-              <div
-                className="h-9 w-9 rounded-xl grid place-items-center text-white font-bold"
-                style={{ background: "var(--gradient-brand)" }}
-              >
-                G
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="GrantAI Logo" 
+                className="h-9 w-9 object-contain rounded-xl transition-transform group-hover:scale-105" 
+              />
               <span className="font-display font-bold text-lg text-[var(--text-primary)]">
                 GrantAI
               </span>
