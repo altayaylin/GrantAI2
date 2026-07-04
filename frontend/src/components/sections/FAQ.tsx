@@ -25,7 +25,7 @@ export function FAQ() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)]/50 backdrop-blur overflow-hidden transition-all duration-300 hover:border-[var(--border-accent)]"
+                className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden transition-all duration-300 hover:border-[var(--border-accent)]"
               >
                 <button
                   onClick={() => toggle(idx)}

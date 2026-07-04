@@ -19,7 +19,6 @@ export function Navbar() {
     { name: "Как это работает", href: "#how-it-works" },
     { name: "Возможности", href: "#features" },
     { name: "Сравнение", href: "#comparison" },
-    { name: "Отзывы", href: "#testimonials" },
     { name: "Тарифы", href: "#pricing" },
   ];
 

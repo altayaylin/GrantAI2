@@ -74,12 +74,12 @@ export function FinalCTA() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="flex-1 h-14 px-6 rounded-2xl bg-[var(--bg-card)]/80 backdrop-blur border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-all shadow-lg"
+                    className="flex-1 h-14 px-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-all shadow-lg"
                   />
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="h-14 px-8 bg-[var(--accent)] text-white font-bold rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_24px_rgba(79,142,247,0.4)] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 shrink-0"
+                    className="h-14 px-8 bg-[var(--accent)] text-white font-bold rounded-2xl transition-all duration-200 md:hover:scale-[1.02] md:hover:shadow-[0_0_24px_var(--accent-glow)] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 shrink-0"
                   >
                     {isLoading ? (
                       <Loader2 className="h-5 w-5 animate-spin" />

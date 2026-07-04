@@ -30,7 +30,7 @@ export const FEATURES = [
   {
     id: "ai-review",
     title: "AI оценка профиля",
-    description: "Получи честную оценку своих шансов по каждому университету. AI сравнивает тебя с реальными поступившими.",
+    description: "Получи честную оценку своего профиля по каждому университету. AI сравнивает тебя со средними поступившими.",
     icon: "Sparkles",
     isLarge: true,
   },
@@ -67,47 +67,31 @@ export const FEATURES = [
 export const COMPARISONS = [
   {
     uni: "MIT",
-    chance: 18,
     tier: "Reach",
     metrics: { SAT: 96, GPA: 98, Activities: 85, Awards: 90 },
-    tip: "Добавь research project в портфолио — это повысит шансы на 12%.",
+    tip: "Добавь research project в портфолио — это значительно усилит твою заявку.",
   },
   {
     uni: "ETH Zürich",
-    chance: 42,
     tier: "Match",
     metrics: { SAT: 88, GPA: 92, Activities: 70, Awards: 75 },
     tip: "Твой профиль силён по CS. Сделай упор на мотивационное письмо.",
   },
   {
     uni: "TU Delft",
-    chance: 64,
-    tier: "Target",
+    tier: "Match",
     metrics: { SAT: 85, GPA: 90, Activities: 78, Awards: 65 },
-    tip: "Отличные шансы. Начни подготовку документов для стипендии заранее.",
+    tip: "Отличные показатели. Начни подготовку документов для стипендии заранее.",
+  },
+  {
+    uni: "Nazarbayev University",
+    tier: "Safety",
+    metrics: { SAT: 70, GPA: 75, Activities: 55, Awards: 45 },
+    tip: "У тебя отличные показатели для Nazarbayev University. Фокусируйся на более амбициозных целях.",
   },
 ];
 
-export const TESTIMONIALS = [
-  {
-    quote: "Я потратил неделю, пытаясь разобраться в требованиях MIT. GrantAI сделал это за 5 минут и показал, чего мне не хватает.",
-    author: "Данияр А.",
-    info: "12 класс, NIS Алматы → ETH Zürich (принят)",
-    initials: "ДА",
-  },
-  {
-    quote: "Дедлайны больше не пугают. Платформа сама напоминает, что делать дальше, и я наконец чувствую контроль.",
-    author: "Айгерим С.",
-    info: "11 класс, БИЛ Астана",
-    initials: "АС",
-  },
-  {
-    quote: "AI оценка была честной и конкретной. Не 'улучши эссе', а 'добавь research project — это даст +12% к шансам в Carnegie Mellon'.",
-    author: "Тимур Н.",
-    info: "12 класс → TU Delft (принят)",
-    initials: "ТН",
-  },
-];
+export const TESTIMONIALS: any[] = [];
 
 export const FAQS = [
   {

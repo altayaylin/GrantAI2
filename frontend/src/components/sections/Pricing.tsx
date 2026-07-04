@@ -35,7 +35,7 @@ export function Pricing() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/30 backdrop-blur p-8 lg:p-10 flex flex-col justify-between hover:bg-[var(--bg-card-hover)] transition-all duration-300"
+            className="group relative p-8 lg:p-10 premium-card flex flex-col justify-between"
           >
             <div>
               <h3 className="text-xl font-bold text-[var(--text-primary)]">Free</h3>
@@ -79,7 +79,7 @@ export function Pricing() {
 
             <div>
               <h3 className="text-xl font-bold text-[var(--text-primary)]">Pro</h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-2">Полный набор инструментов для максимальных шансов на поступление</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-2">Полный набор инструментов для подготовки сильной заявки</p>
               
               <div className="my-6">
                 <span className="text-4xl font-extrabold text-[var(--text-primary)] font-mono-custom">2 990 ₸</span>

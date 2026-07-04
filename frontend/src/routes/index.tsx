@@ -5,7 +5,6 @@ import { Stats } from "../components/sections/Stats";
 import { HowItWorks } from "../components/sections/HowItWorks";
 import { Features } from "../components/sections/Features";
 import { Comparison } from "../components/sections/Comparison";
-import { Testimonials } from "../components/sections/Testimonials";
 import { Pricing } from "../components/sections/Pricing";
 import { FAQ } from "../components/sections/FAQ";
 import { FinalCTA } from "../components/sections/FinalCTA";
@@ -24,7 +23,6 @@ function LandingPage() {
       <HowItWorks />
       <Features />
       <Comparison />
-      <Testimonials />
       <Pricing />
       <FAQ />
       <FinalCTA />

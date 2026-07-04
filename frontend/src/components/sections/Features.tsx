@@ -55,7 +55,7 @@ export function Features() {
               <motion.div
                 key={feat.id}
                 variants={itemVariants}
-                className="lg:col-span-2 group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/80 backdrop-blur p-8 lg:p-10 flex flex-col justify-between overflow-hidden min-h-[420px] hover:border-[var(--border-accent)] transition-all duration-300"
+                className="lg:col-span-2 group relative p-8 lg:p-10 premium-card flex flex-col justify-between overflow-hidden min-h-[420px]"
               >
                 {/* Glow Overlay */}
                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-[var(--accent-glow)] to-transparent rounded-full blur-2xl pointer-events-none" />
@@ -115,7 +115,7 @@ export function Features() {
                 <motion.div
                   key={feat.id}
                   variants={itemVariants}
-                  className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/50 backdrop-blur p-6 hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-accent)] transition-all duration-300 flex flex-col justify-between"
+                  className="group relative p-6 premium-card flex flex-col justify-between"
                 >
                   <div>
                     <div className="p-2.5 rounded-lg bg-[var(--bg-base)] border border-[var(--border)] mb-4 text-[var(--accent)] inline-block group-hover:scale-105 transition-transform">

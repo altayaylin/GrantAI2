@@ -30,7 +30,7 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/50 backdrop-blur p-8 hover:bg-[var(--bg-card-hover)] hover:-translate-y-1 transition-all duration-300 flex flex-col items-start"
+                className="group relative p-8 premium-card flex flex-col items-start"
               >
                 {/* Accent glow on hover */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--accent-glow)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />

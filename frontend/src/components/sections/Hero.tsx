@@ -28,9 +28,11 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center pt-28 lg:pt-36 pb-16 lg:pb-24 overflow-hidden">
-      {/* Gradient Mesh Glow Background */}
-      <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[rgba(79,142,247,0.12)] to-transparent blur-3xl pointer-events-none" />
-      <div className="absolute top-[200px] left-[-150px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-[rgba(123,110,246,0.1)] to-transparent blur-3xl pointer-events-none" />
+      {/* Soft Accent Glow Behind Hero */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full blur-[120px] pointer-events-none z-0" 
+        style={{ backgroundImage: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)' }}
+      />
 
       <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
         {/* Hero Left Content */}
@@ -50,10 +52,10 @@ export function Hero() {
           {/* Heading */}
           <motion.h1
             variants={itemVariants}
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-display tracking-tight text-[var(--text-primary)] leading-[1.1]"
+            className="text-[36px] sm:text-[48px] lg:text-[64px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)] leading-[1.1]"
           >
             Поступи в топовый вуз. <br />
-            <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
+            <span className="text-[var(--accent)]">
               Без хаоса и гадания.
             </span>
           </motion.h1>
@@ -61,7 +63,7 @@ export function Hero() {
           {/* Subheading */}
           <motion.p
             variants={itemVariants}
-            className="mt-6 text-base sm:text-lg text-[var(--text-secondary)] max-w-xl leading-relaxed"
+            className="mt-6 text-[16px] sm:text-[17px] text-[var(--text-secondary)] max-w-xl leading-[1.6]"
           >
             GrantAI анализирует твой профиль, подбирает университеты и составляет
             чёткий план действий — так, чтобы ты точно знал, что делать завтра.
@@ -74,13 +76,13 @@ export function Hero() {
           >
             <Link
               to="/auth"
-              className="bg-[var(--accent)] text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_24px_rgba(79,142,247,0.4)] active:scale-[0.98] flex items-center gap-2"
+              className="bg-[var(--accent)] text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 md:hover:scale-[1.02] md:hover:shadow-[0_0_24px_var(--accent-glow)] active:scale-[0.98] flex items-center gap-2"
             >
               Начать бесплатно <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#how-it-works"
-              className="bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border)] font-semibold px-6 py-3.5 rounded-xl transition-all hover:bg-[var(--bg-card-hover)] active:scale-[0.98] flex items-center gap-2"
+              className="bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border)] font-semibold px-6 py-3.5 rounded-xl transition-all md:hover:bg-[var(--bg-card-hover)] active:scale-[0.98] flex items-center gap-2"
             >
               Смотреть демо <Play className="h-4 w-4 fill-current text-[var(--text-secondary)]" />
             </a>
@@ -95,7 +97,7 @@ export function Hero() {
               ★★★★★
             </div>
             <span>
-              Уже используют <strong className="text-[var(--text-primary)]">1 200+ учеников</strong> из Казахстана
+              Уже используют школьники из Казахстана для подготовки к поступлению
             </span>
           </motion.div>
         </motion.div>
