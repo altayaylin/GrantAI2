@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { Bell, Search, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { User } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/_app")({
@@ -11,21 +13,39 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   const [user, setUser] = useState<User | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setSessionChecked(true);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setSessionChecked(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // New users (incl. Google sign-up) land here without a profile row yet — send them to onboarding once.
+  const { isError: noProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.profile.get(),
+    retry: false,
+    enabled: sessionChecked && !!user,
+  });
+
+  useEffect(() => {
+    if (sessionChecked && user && !profileLoading && noProfile && pathname !== "/onboarding") {
+      navigate({ to: "/onboarding" });
+    }
+  }, [sessionChecked, user, profileLoading, noProfile, pathname, navigate]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

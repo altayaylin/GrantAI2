@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
-import { formatAcceptance, type MyListItem } from "@/lib/types";
+import { formatAcceptance, type MyListItem, type Profile } from "@/lib/types";
 
-export const Route = createFileRoute("/_app/portfolio")({
+export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
 
@@ -36,17 +36,134 @@ const documents = [
   { name: "Recommendation_Math_Teacher.pdf",    type: "Рекомендация",  size: "210 КБ", updated: "2 нед назад" },
 ];
 
+const MOCK_PROFILE: Profile = {
+  id: "mock-profile-id",
+  full_name: "Алишер Нуржанов",
+  school: "РФМШ Алматы",
+  grade: 11,
+  city: "Алматы",
+  major: "Computer Science & AI",
+  target_countries: ["США", "Сингапур", "Канада"],
+  gpa: 4.92,
+  gpa_scale: 5,
+  sat_total: 1540,
+  sat_math: 800,
+  sat_ebrw: 740,
+  ielts: 8.0,
+  toefl: null,
+  activities_count: 4,
+  awards_count: 4,
+};
+
+const MOCK_MY_LIST: MyListItem[] = [
+  {
+    id: "mock-list-1",
+    student_id: "mock-student",
+    university_id: "mock-uni-1",
+    category: "reach",
+    match_score: 0.85,
+    added_at: new Date().toISOString(),
+    universities: {
+      id: "mock-uni-1",
+      name: "Massachusetts Institute of Technology (MIT)",
+      country: "США",
+      qs_rank: 1,
+      acceptance_rate: 0.04,
+      sat_25th: 1510,
+      sat_75th: 1580,
+      avg_gpa: 4.0,
+      min_ielts: 7.5,
+      min_toefl: 100,
+      majors: ["Computer Science", "Physics"],
+      deadline: "2026-01-01",
+      tuition_usd: 57590,
+      has_scholarship: true
+    }
+  },
+  {
+    id: "mock-list-2",
+    student_id: "mock-student",
+    university_id: "mock-uni-2",
+    category: "match",
+    match_score: 0.92,
+    added_at: new Date().toISOString(),
+    universities: {
+      id: "mock-uni-2",
+      name: "National University of Singapore (NUS)",
+      country: "Сингапур",
+      qs_rank: 8,
+      acceptance_rate: 0.13,
+      sat_25th: 1450,
+      sat_75th: 1530,
+      avg_gpa: 3.8,
+      min_ielts: 7.0,
+      min_toefl: 95,
+      majors: ["Computer Science", "Data Science"],
+      deadline: "2026-02-15",
+      tuition_usd: 32000,
+      has_scholarship: true
+    }
+  },
+  {
+    id: "mock-list-3",
+    student_id: "mock-student",
+    university_id: "mock-uni-3",
+    category: "safety",
+    match_score: 0.97,
+    added_at: new Date().toISOString(),
+    universities: {
+      id: "mock-uni-3",
+      name: "University of Toronto",
+      country: "Канада",
+      qs_rank: 21,
+      acceptance_rate: 0.43,
+      sat_25th: 1350,
+      sat_75th: 1480,
+      avg_gpa: 3.7,
+      min_ielts: 7.0,
+      min_toefl: 93,
+      majors: ["Software Engineering"],
+      deadline: "2026-01-15",
+      tuition_usd: 45000,
+      has_scholarship: true
+    }
+  }
+];
+
 function ProfilePage() {
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: () => api.profile.get(),
     retry: false,
   });
 
-  const { data: myList = [], isLoading: listLoading } = useQuery({
+  const { data: myListData, isLoading: listLoading } = useQuery({
     queryKey: ["my-list"],
     queryFn: () => api.universities.myList(),
   });
+
+  const profile = profileData
+    ? {
+        id: profileData.id,
+        full_name: profileData.full_name ?? MOCK_PROFILE.full_name,
+        school: profileData.school ?? MOCK_PROFILE.school,
+        grade: profileData.grade ?? MOCK_PROFILE.grade,
+        city: profileData.city ?? MOCK_PROFILE.city,
+        major: profileData.major ?? MOCK_PROFILE.major,
+        target_countries: profileData.target_countries ?? MOCK_PROFILE.target_countries,
+        gpa: profileData.gpa ?? MOCK_PROFILE.gpa,
+        gpa_scale: profileData.gpa_scale ?? MOCK_PROFILE.gpa_scale,
+        sat_total: profileData.sat_total ?? MOCK_PROFILE.sat_total,
+        sat_math: profileData.sat_math ?? MOCK_PROFILE.sat_math,
+        sat_ebrw: profileData.sat_ebrw ?? MOCK_PROFILE.sat_ebrw,
+        ielts: profileData.ielts ?? MOCK_PROFILE.ielts,
+        toefl: profileData.toefl ?? MOCK_PROFILE.toefl,
+        activities_count: profileData.activities_count ?? MOCK_PROFILE.activities_count,
+        awards_count: profileData.awards_count ?? MOCK_PROFILE.awards_count,
+      }
+    : MOCK_PROFILE;
+
+  const myList = myListData && myListData.length > 0 ? myListData : MOCK_MY_LIST;
 
   const name = profile?.full_name ?? "Алишер Нуржанов";
   const initials = name.split(" ").map((p: string) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -98,8 +215,8 @@ function ProfilePage() {
             </div>
           </div>
           <div className="flex gap-3 self-center lg:self-end">
-            <Button variant="secondary" className="h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/10 font-bold">
-              <Pencil className="mr-2 h-4 w-4" /> Редактировать
+            <Button asChild variant="secondary" className="h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/10 font-bold">
+              <Link to="/onboarding"><Pencil className="mr-2 h-4 w-4" /> Редактировать</Link>
             </Button>
             <Button variant="secondary" className="h-11 px-6 rounded-xl bg-white text-[#0F3269] hover:bg-blue-50 font-bold shadow-lg">
               <Download className="mr-2 h-4 w-4" /> Экспорт CV

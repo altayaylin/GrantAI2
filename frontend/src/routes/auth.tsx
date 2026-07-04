@@ -63,6 +63,7 @@ export function AuthPage() {
         });
         if (error) throw error;
         toast.success("Регистрация успешна! Проверьте email для подтверждения.");
+        navigate({ to: "/onboarding" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -70,8 +71,8 @@ export function AuthPage() {
         });
         if (error) throw error;
         toast.success("Вход выполнен успешно!");
+        navigate({ to: "/dashboard" });
       }
-      navigate({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message || "Произошла ошибка при входе");
     }

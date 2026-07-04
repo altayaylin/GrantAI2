@@ -159,7 +159,7 @@ function Overview() {
               Университеты
             </Link>
             <Link
-              to="/portfolio"
+              to="/profile"
               className="bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all text-sm font-bold px-6 py-3 rounded-xl border border-white/10 hover:scale-[1.02] active:scale-[0.98]"
             >
               Мой профиль

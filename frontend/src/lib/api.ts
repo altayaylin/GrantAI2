@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { University, MatchResult, MyListItem, Profile, Deadline } from "@/lib/types";
+import type { Opportunity } from "@/lib/opportunities";
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -66,6 +67,11 @@ export const api = {
         method: "PUT",
         body: JSON.stringify(data),
       }),
+  },
+
+  activities: {
+    list: (category?: string): Promise<Opportunity[]> =>
+      apiFetch(`/activities${category ? `?category=${encodeURIComponent(category)}` : ""}`),
   },
 
   deadlines: {

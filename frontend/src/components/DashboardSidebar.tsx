@@ -12,10 +12,9 @@ import {
 
 const nav = [
   { title: "Обзор", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Портфолио", url: "/portfolio", icon: FolderKanban },
+  { title: "Профиль", url: "/profile", icon: Settings },
   { title: "Дедлайны", url: "/deadlines", icon: CalendarClock },
   { title: "Университеты", url: "/universities", icon: GraduationCap },
-  { title: "AI оценка", url: "/ai-review", icon: Sparkles },
   { title: "Активности", url: "/opportunities", icon: Compass },
 ];
 

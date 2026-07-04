@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import universities, profiles, deadlines
+from app.routers import universities, profiles, deadlines, activities
 
 app = FastAPI(
     title="GrantAI API",
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(universities.router)
 app.include_router(profiles.router)
 app.include_router(deadlines.router)
+app.include_router(activities.router)
 
 
 @app.get("/")

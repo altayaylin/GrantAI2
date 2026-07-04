@@ -30,7 +30,10 @@ async def create_or_update_profile(
     """Создать или обновить профиль (upsert)."""
     payload = {k: v for k, v in data.model_dump().items() if v is not None}
     payload["id"] = user_id
-    res = supabase.table("profiles").upsert(payload).execute()
+    try:
+        res = supabase.table("profiles").upsert(payload).execute()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Не удалось сохранить профиль: {e}")
     return res.data[0] if res.data else {}
 
 
@@ -43,10 +46,13 @@ async def update_profile(
     payload = data.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="Нечего обновлять")
-    res = (
-        supabase.table("profiles")
-        .update(payload)
-        .eq("id", user_id)
-        .execute()
-    )
+    try:
+        res = (
+            supabase.table("profiles")
+            .update(payload)
+            .eq("id", user_id)
+            .execute()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Не удалось обновить профиль: {e}")
     return res.data[0] if res.data else {}

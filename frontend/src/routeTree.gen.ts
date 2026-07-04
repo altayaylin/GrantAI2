@@ -9,15 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppUniversitiesRouteImport } from './routes/_app.universities'
-import { Route as AppPortfolioRouteImport } from './routes/_app.portfolio'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppOpportunitiesRouteImport } from './routes/_app.opportunities'
 import { Route as AppDeadlinesRouteImport } from './routes/_app.deadlines'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -37,9 +43,9 @@ const AppUniversitiesRoute = AppUniversitiesRouteImport.update({
   path: '/universities',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPortfolioRoute = AppPortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOpportunitiesRoute = AppOpportunitiesRouteImport.update({
@@ -61,19 +67,21 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof AppDashboardRoute
   '/deadlines': typeof AppDeadlinesRoute
   '/opportunities': typeof AppOpportunitiesRoute
-  '/portfolio': typeof AppPortfolioRoute
+  '/profile': typeof AppProfileRoute
   '/universities': typeof AppUniversitiesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof AppDashboardRoute
   '/deadlines': typeof AppDeadlinesRoute
   '/opportunities': typeof AppOpportunitiesRoute
-  '/portfolio': typeof AppPortfolioRoute
+  '/profile': typeof AppProfileRoute
   '/universities': typeof AppUniversitiesRoute
 }
 export interface FileRoutesById {
@@ -81,10 +89,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/deadlines': typeof AppDeadlinesRoute
   '/_app/opportunities': typeof AppOpportunitiesRoute
-  '/_app/portfolio': typeof AppPortfolioRoute
+  '/_app/profile': typeof AppProfileRoute
   '/_app/universities': typeof AppUniversitiesRoute
 }
 export interface FileRouteTypes {
@@ -92,29 +101,32 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/onboarding'
     | '/dashboard'
     | '/deadlines'
     | '/opportunities'
-    | '/portfolio'
+    | '/profile'
     | '/universities'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/onboarding'
     | '/dashboard'
     | '/deadlines'
     | '/opportunities'
-    | '/portfolio'
+    | '/profile'
     | '/universities'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/auth'
+    | '/onboarding'
     | '/_app/dashboard'
     | '/_app/deadlines'
     | '/_app/opportunities'
-    | '/_app/portfolio'
+    | '/_app/profile'
     | '/_app/universities'
   fileRoutesById: FileRoutesById
 }
@@ -122,10 +134,18 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -154,11 +174,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUniversitiesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/portfolio': {
-      id: '/_app/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof AppPortfolioRouteImport
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/opportunities': {
@@ -189,7 +209,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDeadlinesRoute: typeof AppDeadlinesRoute
   AppOpportunitiesRoute: typeof AppOpportunitiesRoute
-  AppPortfolioRoute: typeof AppPortfolioRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppUniversitiesRoute: typeof AppUniversitiesRoute
 }
 
@@ -197,7 +217,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDeadlinesRoute: AppDeadlinesRoute,
   AppOpportunitiesRoute: AppOpportunitiesRoute,
-  AppPortfolioRoute: AppPortfolioRoute,
+  AppProfileRoute: AppProfileRoute,
   AppUniversitiesRoute: AppUniversitiesRoute,
 }
 
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
