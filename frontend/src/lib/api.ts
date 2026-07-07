@@ -33,7 +33,7 @@ async function apiFetch<T>(
 export const api = {
   universities: {
     list: (country?: string): Promise<University[]> =>
-      apiFetch(`/universities${country ? `?country=${encodeURIComponent(country)}` : ""}`),
+      apiFetch(`/universities/${country ? `?country=${encodeURIComponent(country)}` : ""}`),
 
     match: (): Promise<MatchResult[]> =>
       apiFetch("/universities/match"),
@@ -73,7 +73,7 @@ export const api = {
 
   activities: {
     list: (category?: string): Promise<Opportunity[]> =>
-      apiFetch(`/activities${category ? `?category=${encodeURIComponent(category)}` : ""}`),
+      apiFetch(`/activities/${category ? `?category=${encodeURIComponent(category)}` : ""}`),
   },
 
   deadlines: {
