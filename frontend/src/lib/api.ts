@@ -2,7 +2,9 @@ import { supabase } from "@/lib/supabase";
 import type { University, MatchResult, MyListItem, Profile, Deadline } from "@/lib/types";
 import type { Opportunity } from "@/lib/opportunities";
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const rawBase = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(rawBase);
+const BASE = isLocal ? rawBase : rawBase.replace(/^http:\/\//, "https://");
 
 async function getToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
