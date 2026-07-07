@@ -18,6 +18,7 @@ app.add_middleware(
         "http://localhost:8081",
         "http://localhost:8082",
         "http://localhost:8083",
+        "https://grant-ai-2.vercel.app",
         *settings.cors_origin_list,
     ],
     allow_credentials=True,
