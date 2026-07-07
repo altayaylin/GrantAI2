@@ -2,133 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, School, GraduationCap, Globe2, Target,
-  Trophy, Award, Sparkles, FileText, Upload,
-  Pencil, Plus, Download, ArrowRight, Loader2,
+  Sparkles, Pencil, Plus, Download, ArrowRight, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
-import { formatAcceptance, type MyListItem, type Profile } from "@/lib/types";
+import { formatAcceptance, type MyListItem } from "@/lib/types";
 
 export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
-
-const awards = [
-  { title: "Республиканская олимпиада по информатике", place: "Золото",  year: "2025", level: "Национальный" },
-  { title: "IZhO — Жаутыков",                         place: "Серебро", year: "2024", level: "Международный" },
-  { title: "Kangaroo Math",                            place: "1 место в регионе", year: "2024", level: "Региональный" },
-  { title: "Hackathon nFactorial",                     place: "Финалист", year: "2024", level: "Национальный" },
-];
-
-const extracurriculars = [
-  { title: "Президент Robotics Club",               hours: "8 ч/нед",  years: "10–12", desc: "Команда из 14 человек, 2 победы на республиканских соревнованиях." },
-  { title: "Research Intern, Nazarbayev University", hours: "10 ч/нед", years: "11–12", desc: "ML-модель для предсказания качества воздуха в Алматы." },
-  { title: "Волонтёр, фонд Дара",                   hours: "4 ч/нед",  years: "9–12",  desc: "Преподавание программирования детям из детских домов." },
-  { title: "Капитан школьной команды по дебатам",   hours: "5 ч/нед",  years: "10–12", desc: "Финал республиканского чемпионата 2024." },
-];
-
-const documents = [
-  { name: "CV_Alisher_2025.pdf",               type: "CV",            size: "182 КБ", updated: "5 дн назад" },
-  { name: "Personal_Statement_v3.docx",         type: "Эссе",          size: "46 КБ",  updated: "вчера" },
-  { name: "MIT_Why_Essay.docx",                 type: "Эссе",          size: "28 КБ",  updated: "3 дн назад" },
-  { name: "Recommendation_Math_Teacher.pdf",    type: "Рекомендация",  size: "210 КБ", updated: "2 нед назад" },
-];
-
-const MOCK_PROFILE: Profile = {
-  id: "mock-profile-id",
-  full_name: "Алишер Нуржанов",
-  school: "РФМШ Алматы",
-  grade: 11,
-  city: "Алматы",
-  major: "Computer Science & AI",
-  target_countries: ["США", "Сингапур", "Канада"],
-  gpa: 4.92,
-  gpa_scale: 5,
-  sat_total: 1540,
-  sat_math: 800,
-  sat_ebrw: 740,
-  ielts: 8.0,
-  toefl: null,
-  activities_count: 4,
-  awards_count: 4,
-};
-
-const MOCK_MY_LIST: MyListItem[] = [
-  {
-    id: "mock-list-1",
-    student_id: "mock-student",
-    university_id: "mock-uni-1",
-    category: "reach",
-    match_score: 0.85,
-    added_at: new Date().toISOString(),
-    universities: {
-      id: "mock-uni-1",
-      name: "Massachusetts Institute of Technology (MIT)",
-      country: "США",
-      qs_rank: 1,
-      acceptance_rate: 0.04,
-      sat_25th: 1510,
-      sat_75th: 1580,
-      avg_gpa: 4.0,
-      min_ielts: 7.5,
-      min_toefl: 100,
-      majors: ["Computer Science", "Physics"],
-      deadline: "2026-01-01",
-      tuition_usd: 57590,
-      has_scholarship: true
-    }
-  },
-  {
-    id: "mock-list-2",
-    student_id: "mock-student",
-    university_id: "mock-uni-2",
-    category: "match",
-    match_score: 0.92,
-    added_at: new Date().toISOString(),
-    universities: {
-      id: "mock-uni-2",
-      name: "National University of Singapore (NUS)",
-      country: "Сингапур",
-      qs_rank: 8,
-      acceptance_rate: 0.13,
-      sat_25th: 1450,
-      sat_75th: 1530,
-      avg_gpa: 3.8,
-      min_ielts: 7.0,
-      min_toefl: 95,
-      majors: ["Computer Science", "Data Science"],
-      deadline: "2026-02-15",
-      tuition_usd: 32000,
-      has_scholarship: true
-    }
-  },
-  {
-    id: "mock-list-3",
-    student_id: "mock-student",
-    university_id: "mock-uni-3",
-    category: "safety",
-    match_score: 0.97,
-    added_at: new Date().toISOString(),
-    universities: {
-      id: "mock-uni-3",
-      name: "University of Toronto",
-      country: "Канада",
-      qs_rank: 21,
-      acceptance_rate: 0.43,
-      sat_25th: 1350,
-      sat_75th: 1480,
-      avg_gpa: 3.7,
-      min_ielts: 7.0,
-      min_toefl: 93,
-      majors: ["Software Engineering"],
-      deadline: "2026-01-15",
-      tuition_usd: 45000,
-      has_scholarship: true
-    }
-  }
-];
 
 function ProfilePage() {
   const { data: profileData, isLoading: profileLoading } = useQuery({
@@ -142,30 +25,10 @@ function ProfilePage() {
     queryFn: () => api.universities.myList(),
   });
 
-  const profile = profileData
-    ? {
-        id: profileData.id,
-        full_name: profileData.full_name ?? MOCK_PROFILE.full_name,
-        school: profileData.school ?? MOCK_PROFILE.school,
-        grade: profileData.grade ?? MOCK_PROFILE.grade,
-        city: profileData.city ?? MOCK_PROFILE.city,
-        major: profileData.major ?? MOCK_PROFILE.major,
-        target_countries: profileData.target_countries ?? MOCK_PROFILE.target_countries,
-        gpa: profileData.gpa ?? MOCK_PROFILE.gpa,
-        gpa_scale: profileData.gpa_scale ?? MOCK_PROFILE.gpa_scale,
-        sat_total: profileData.sat_total ?? MOCK_PROFILE.sat_total,
-        sat_math: profileData.sat_math ?? MOCK_PROFILE.sat_math,
-        sat_ebrw: profileData.sat_ebrw ?? MOCK_PROFILE.sat_ebrw,
-        ielts: profileData.ielts ?? MOCK_PROFILE.ielts,
-        toefl: profileData.toefl ?? MOCK_PROFILE.toefl,
-        activities_count: profileData.activities_count ?? MOCK_PROFILE.activities_count,
-        awards_count: profileData.awards_count ?? MOCK_PROFILE.awards_count,
-      }
-    : MOCK_PROFILE;
+  const profile = profileData ?? null;
+  const myList: MyListItem[] = myListData ?? [];
 
-  const myList = myListData && myListData.length > 0 ? myListData : MOCK_MY_LIST;
-
-  const name = profile?.full_name ?? "Алишер Нуржанов";
+  const name = profile?.full_name ?? "Профиль не заполнен";
   const initials = name.split(" ").map((p: string) => p[0]).join("").slice(0, 2).toUpperCase();
 
   const scores = [
@@ -183,6 +46,21 @@ function ProfilePage() {
     return (
       <div className="flex items-center justify-center py-32 gap-3 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" /> Загружаем профиль…
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border p-12 text-center">
+        <GraduationCap className="h-10 w-10 mx-auto text-muted-foreground/60 mb-4" />
+        <div className="font-semibold text-lg">Профиль ещё не заполнен</div>
+        <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-sm mx-auto">
+          Заполни анкету, чтобы мы могли подобрать университеты и показать твою статистику здесь.
+        </p>
+        <Button asChild>
+          <Link to="/onboarding">Заполнить профиль <ArrowRight className="h-4 w-4" /></Link>
+        </Button>
       </div>
     );
   }
@@ -309,65 +187,6 @@ function ProfilePage() {
               <div className="text-[11px] text-muted-foreground mt-1">{s.sub}</div>
             </div>
           ))}
-        </div>
-      </Card>
-
-      {/* Awards */}
-      <Card title="Олимпиады и награды" icon={Trophy} action="Добавить">
-        <div className="space-y-2">
-          {awards.map((a) => (
-            <div key={a.title} className="flex items-start justify-between gap-4 rounded-xl border border-border p-4 hover:border-primary/40 transition-all">
-              <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-lg grid place-items-center bg-primary/10 text-primary shrink-0">
-                  <Award className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm">{a.title}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{a.place} · {a.year}</div>
-                </div>
-              </div>
-              <Badge variant="outline" className="shrink-0">{a.level}</Badge>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Extracurriculars */}
-      <Card title="Внеучебная деятельность" icon={Sparkles} action="Добавить">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {extracurriculars.map((e) => (
-            <div key={e.title} className="rounded-xl border border-border p-4 hover:border-primary/40 transition-all">
-              <div className="flex items-start justify-between gap-2">
-                <div className="font-medium text-sm">{e.title}</div>
-                <Badge variant="secondary" className="font-normal shrink-0">{e.hours}</Badge>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">Классы: {e.years}</div>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{e.desc}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Documents */}
-      <Card title="Документы" icon={FileText} action="Загрузить">
-        <div className="space-y-2">
-          {documents.map((d) => (
-            <div key={d.name} className="flex items-center justify-between gap-4 rounded-xl border border-border p-3.5 hover:border-primary/40 transition-all">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-9 w-9 rounded-lg grid place-items-center bg-primary/10 text-primary shrink-0">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{d.name}</div>
-                  <div className="text-xs text-muted-foreground">{d.type} · {d.size} · {d.updated}</div>
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" className="shrink-0"><Download className="h-4 w-4" /></Button>
-            </div>
-          ))}
-          <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-border px-3 py-4 text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
-            <Upload className="h-4 w-4" /> Загрузить документ
-          </button>
         </div>
       </Card>
     </div>
