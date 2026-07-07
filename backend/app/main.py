@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
 from app.routers import universities, profiles, deadlines, activities
 
 app = FastAPI(
@@ -17,6 +18,7 @@ app.add_middleware(
         "http://localhost:8081",
         "http://localhost:8082",
         "http://localhost:8083",
+        *settings.cors_origin_list,
     ],
     allow_credentials=True,
     allow_methods=["*"],
