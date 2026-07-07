@@ -60,7 +60,11 @@ function OnboardingPage() {
     retry: false,
   });
 
-  const { data: universities = [] } = useQuery({
+  const {
+    data: universities = [],
+    isLoading: universitiesLoading,
+    error: universitiesError,
+  } = useQuery({
     queryKey: ["universities"],
     queryFn: () => api.universities.list(),
     staleTime: 5 * 60 * 1000,
@@ -336,17 +340,30 @@ function OnboardingPage() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="mt-2 flex flex-wrap gap-2 p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-base)]/30 max-h-56 overflow-y-auto">
-                          {countryOptions.map((c) => (
-                            <button
-                              key={c}
-                              type="button"
-                              onClick={() => toggleCountry(c)}
-                              className={chipClass(selectedCountries.includes(c))}
-                            >
-                              {selectedCountries.includes(c) && <Check className="h-3 w-3" />}
-                              {c}
-                            </button>
-                          ))}
+                          {universitiesLoading ? (
+                            <span className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              Загружаем страны…
+                            </span>
+                          ) : universitiesError ? (
+                            <span className="text-sm text-red-400">
+                              Не удалось загрузить страны. Проверь подключение и попробуй снова.
+                            </span>
+                          ) : countryOptions.length === 0 ? (
+                            <span className="text-sm text-[var(--text-muted)]">Страны не найдены.</span>
+                          ) : (
+                            countryOptions.map((c) => (
+                              <button
+                                key={c}
+                                type="button"
+                                onClick={() => toggleCountry(c)}
+                                className={chipClass(selectedCountries.includes(c))}
+                              >
+                                {selectedCountries.includes(c) && <Check className="h-3 w-3" />}
+                                {c}
+                              </button>
+                            ))
+                          )}
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
