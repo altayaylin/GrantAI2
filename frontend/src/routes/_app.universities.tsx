@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraduationCap, MapPin, Search, Check, Star, Trophy, Loader2, AlertCircle } from "lucide-react";
@@ -16,7 +16,6 @@ export const Route = createFileRoute("/_app/universities")({
 function UniversitiesPage() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState<string>("Все");
 
   const { data: universities = [], isLoading, error } = useQuery({
     queryKey: ["universities"],
@@ -61,20 +60,14 @@ function UniversitiesPage() {
     return m;
   }, [myList]);
 
-  const countries = useMemo(
-    () => ["Все", ...Array.from(new Set(universities.map((u) => u.country))).sort()],
-    [universities],
-  );
-
   const filtered = universities.filter((u) => {
     const q = query.toLowerCase();
-    const matchesQ =
+    return (
       !query ||
       u.name.toLowerCase().includes(q) ||
       u.country.toLowerCase().includes(q) ||
-      u.majors.some((t) => t.toLowerCase().includes(q));
-    const matchesC = country === "Все" || u.country === country;
-    return matchesQ && matchesC;
+      u.majors.some((t) => t.toLowerCase().includes(q))
+    );
   });
 
   if (isLoading) {
@@ -123,8 +116,8 @@ function UniversitiesPage() {
       </section>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="space-y-2.5">
+        <div className="relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
@@ -133,21 +126,17 @@ function UniversitiesPage() {
             className="w-full h-10 pl-9 pr-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:border-primary transition-colors"
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {countries.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCountry(c)}
-              className={`px-3 h-10 rounded-xl text-sm border transition-colors ${
-                country === c
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card border-border hover:border-primary/40"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <p className="text-sm text-muted-foreground px-1">
+          Выбор целевых стран вы можете сделать в разделе{" "}
+          <Link
+            to="/profile"
+            search={{ edit: "countries" }}
+            className="font-semibold text-[#1A4D9C] hover:text-[#0F3269] hover:underline underline-offset-2 transition-colors"
+          >
+            «Профиль»
+          </Link>
+          .
+        </p>
       </div>
 
       {/* Grid */}

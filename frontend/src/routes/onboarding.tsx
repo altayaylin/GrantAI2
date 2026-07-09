@@ -6,6 +6,7 @@ import {
   ArrowLeft, ArrowRight, Check, ChevronDown, GraduationCap, Globe2, Sparkles, Loader2, X,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CountryFlag } from "@/components/shared/CountryFlag";
 import { api } from "@/lib/api";
 import type { Profile } from "@/lib/types";
 import { toast } from "sonner";
@@ -314,8 +315,9 @@ function OnboardingPage() {
                         {selectedCountries.map((c) => (
                           <span
                             key={c}
-                            className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-md bg-[var(--accent-glow)] text-[var(--accent)] text-xs font-medium"
+                            className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md bg-[var(--accent-glow)] text-[var(--accent)] text-xs font-medium"
                           >
+                            <CountryFlag country={c} className="h-3 w-4.5" />
                             {c}
                             <button
                               type="button"
@@ -359,6 +361,7 @@ function OnboardingPage() {
                                 onClick={() => toggleCountry(c)}
                                 className={chipClass(selectedCountries.includes(c))}
                               >
+                                <CountryFlag country={c} className="h-3.5 w-5" />
                                 {selectedCountries.includes(c) && <Check className="h-3 w-3" />}
                                 {c}
                               </button>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { CountryFlag } from "@/components/shared/CountryFlag";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
 import { formatAcceptance, type MyListItem, type Profile } from "@/lib/types";
@@ -36,10 +37,16 @@ function clampNumber(raw: string, min: number, max: number): string {
 
 export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
+  validateSearch: (search: Record<string, unknown>): { edit?: "countries" } =>
+    search.edit === "countries" ? { edit: "countries" } : {},
 });
 
 function ProfilePage() {
-  const [editOpen, setEditOpen] = useState(false);
+  const { edit } = Route.useSearch();
+  const [editOpen, setEditOpen] = useState(edit === "countries");
+  const [editTab, setEditTab] = useState<"basic" | "focus" | "scores">(
+    edit === "countries" ? "focus" : "basic",
+  );
 
   const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
@@ -88,10 +95,10 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-sm mx-auto">
           Заполни анкету, чтобы мы могли подобрать университеты и показать твою статистику здесь.
         </p>
-        <Button onClick={() => setEditOpen(true)}>
+        <Button onClick={() => { setEditTab("basic"); setEditOpen(true); }}>
           Заполнить профиль <ArrowRight className="h-4 w-4" />
         </Button>
-        <EditProfileDialog profile={null} open={editOpen} onOpenChange={setEditOpen} />
+        <EditProfileDialog profile={null} open={editOpen} onOpenChange={setEditOpen} initialTab={editTab} />
       </div>
     );
   }
@@ -127,7 +134,7 @@ function ProfilePage() {
             <Button
               variant="secondary"
               className="h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/10 font-bold"
-              onClick={() => setEditOpen(true)}
+              onClick={() => { setEditTab("basic"); setEditOpen(true); }}
             >
               <Pencil className="mr-2 h-4 w-4" /> Редактировать
             </Button>
@@ -138,7 +145,7 @@ function ProfilePage() {
         </div>
       </section>
 
-      <EditProfileDialog profile={profile} open={editOpen} onOpenChange={setEditOpen} />
+      <EditProfileDialog profile={profile} open={editOpen} onOpenChange={setEditOpen} initialTab={editTab} />
 
       {/* Direction + Countries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -156,8 +163,8 @@ function ProfilePage() {
           <div className="flex flex-wrap gap-2">
             {targetCountries.length > 0
               ? targetCountries.map((c) => (
-                  <div key={c as string} className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
-                    <Globe2 className="h-3.5 w-3.5 text-primary" />{c as string}
+                  <div key={c} className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
+                    <CountryFlag country={c} className="h-3.5 w-5" />{c}
                   </div>
                 ))
               : <p className="text-sm text-muted-foreground">Выбери страны в профиле или добавь вузы — они появятся здесь</p>
@@ -231,14 +238,16 @@ function ProfilePage() {
 }
 
 function EditProfileDialog({
-  profile, open, onOpenChange,
+  profile, open, onOpenChange, initialTab = "basic",
 }: {
   profile: Profile | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialTab?: "basic" | "focus" | "scores";
 }) {
   const qc = useQueryClient();
 
+  const [tab, setTab] = useState(initialTab);
   const [fullName, setFullName] = useState("");
   const [school, setSchool] = useState("");
   const [city, setCity] = useState("");
@@ -269,6 +278,7 @@ function EditProfileDialog({
   // Reset the form to the current profile every time the dialog opens
   useEffect(() => {
     if (!open) return;
+    setTab(initialTab);
     setFullName(profile?.full_name ?? "");
     setSchool(profile?.school ?? "");
     setCity(profile?.city ?? "");
@@ -284,7 +294,7 @@ function EditProfileDialog({
     setSatEbrw(profile?.sat_ebrw != null ? String(profile.sat_ebrw) : "");
     setIelts(profile?.ielts != null ? String(profile.ielts) : "");
     setToefl(profile?.toefl != null ? String(profile.toefl) : "");
-  }, [open, profile]);
+  }, [open, profile, initialTab]);
 
   function toggleCountry(c: string) {
     setCountries((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
@@ -354,7 +364,7 @@ function EditProfileDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
           <div className="space-y-5 px-6 py-5 overflow-y-auto">
-          <Tabs defaultValue="basic">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">О тебе</TabsTrigger>
               <TabsTrigger value="focus">Направление</TabsTrigger>
@@ -447,8 +457,9 @@ function EditProfileDialog({
                             : "bg-card border-border hover:border-primary/40"
                         }`}
                       >
-                        {countries.includes(c) && <Check className="h-3 w-3" />}
+                        <CountryFlag country={c} className="h-3.5 w-5" />
                         {c}
+                        {countries.includes(c) && <Check className="h-3 w-3" />}
                       </button>
                     ))
                   )}
