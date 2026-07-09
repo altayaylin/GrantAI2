@@ -53,6 +53,17 @@ export type Profile = {
   awards_count: number;
 };
 
+export type Achievement = {
+  id: string;
+  student_id: string;
+  title: string;
+  description: string | null;
+  category: "activity" | "award";
+  file_url: string | null;
+  file_name: string | null;
+  created_at: string;
+};
+
 export type Deadline = {
   id: string;
   student_id: string;

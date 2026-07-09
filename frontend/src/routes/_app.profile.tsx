@@ -4,9 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin, School, GraduationCap, Globe2, Target,
   Sparkles, Pencil, Plus, Download, ArrowRight, Loader2, Check,
+  Award, FileText, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -17,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CountryFlag } from "@/components/shared/CountryFlag";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
-import { formatAcceptance, type MyListItem, type Profile } from "@/lib/types";
+import { formatAcceptance, type MyListItem, type Profile, type Achievement } from "@/lib/types";
 import { toast } from "sonner";
 
 const MAJORS = [
@@ -167,6 +169,8 @@ function ProfilePage() {
           </div>
         </Card>
       </div>
+
+      <AchievementsCard />
 
       {/* Target universities from backend */}
       <Card title="Целевые университеты" icon={GraduationCap} action="Выбрать ещё" actionTo="/universities">
@@ -553,12 +557,13 @@ function EditProfileDialog({
 }
 
 function Card({
-  title, icon: Icon, action, actionTo, children,
+  title, icon: Icon, action, actionTo, onAction, children,
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   action?: string;
   actionTo?: string;
+  onAction?: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -571,7 +576,13 @@ function Card({
           <h2 className="font-semibold">{title}</h2>
         </div>
         {action && (
-          <Button variant="ghost" size="sm" className="text-primary hover:text-primary" asChild={!!actionTo}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:text-primary"
+            asChild={!!actionTo}
+            onClick={!actionTo ? onAction : undefined}
+          >
             {actionTo
               ? <Link to={actionTo}><Plus className="h-4 w-4" /> {action}</Link>
               : <><Plus className="h-4 w-4" /> {action}</>
@@ -581,5 +592,209 @@ function Card({
       </div>
       {children}
     </section>
+  );
+}
+
+const ACHIEVEMENT_CATEGORIES: { value: Achievement["category"]; label: string }[] = [
+  { value: "activity", label: "Активность" },
+  { value: "award", label: "Награда" },
+];
+
+function AchievementsCard() {
+  const qc = useQueryClient();
+  const [addOpen, setAddOpen] = useState(false);
+
+  const { data: achievements = [], isLoading } = useQuery({
+    queryKey: ["achievements"],
+    queryFn: () => api.achievements.list(),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => api.achievements.remove(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["achievements"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: () => toast.error("Не удалось удалить достижение"),
+  });
+
+  return (
+    <Card title="Достижения и активности" icon={Award} action="Добавить" onAction={() => setAddOpen(true)}>
+      {isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+          <Loader2 className="h-4 w-4 animate-spin" /> Загружаем…
+        </div>
+      ) : achievements.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-8 text-center">
+          <Award className="h-8 w-8 mx-auto text-muted-foreground/60 mb-3" />
+          <div className="font-medium text-sm">Пока нет достижений</div>
+          <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-sm mx-auto">
+            Добавь активности и награды, приложи файлы (сертификаты, дипломы) — это учитывается при подборе университетов.
+          </p>
+          <Button size="sm" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4" /> Добавить достижение
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {achievements.map((a) => (
+            <div key={a.id} className="rounded-xl border border-border p-4 hover:border-primary/40 transition-all">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span
+                    className={`inline-block text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md border mb-1.5 ${
+                      a.category === "award"
+                        ? "text-amber-600 border-amber-200 bg-amber-50"
+                        : "text-blue-600 border-blue-200 bg-blue-50"
+                    }`}
+                  >
+                    {a.category === "award" ? "Награда" : "Активность"}
+                  </span>
+                  <div className="font-medium text-sm truncate">{a.title}</div>
+                  {a.description && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.description}</p>
+                  )}
+                  {a.file_url && (
+                    <a
+                      href={a.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline"
+                    >
+                      <FileText className="h-3 w-3" /> {a.file_name ?? "Файл"}
+                    </a>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeMutation.mutate(a.id)}
+                  className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                  aria-label="Удалить достижение"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <AddAchievementDialog open={addOpen} onOpenChange={setAddOpen} />
+    </Card>
+  );
+}
+
+function AddAchievementDialog({
+  open, onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const qc = useQueryClient();
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<Achievement["category"]>("activity");
+  const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setTitle("");
+    setCategory("activity");
+    setDescription("");
+    setFile(null);
+  }, [open]);
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      let file_url: string | undefined;
+      let file_name: string | undefined;
+      if (file) {
+        const uploaded = await api.achievements.uploadFile(file);
+        file_url = uploaded.url;
+        file_name = uploaded.name;
+      }
+      return api.achievements.create({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        category,
+        file_url,
+        file_name,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["achievements"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Достижение добавлено");
+      onOpenChange(false);
+    },
+    onError: () => toast.error("Не удалось добавить достижение"),
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    createMutation.mutate();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Добавить достижение</DialogTitle>
+          <DialogDescription>
+            Активность, награда, сертификат или диплом — можно приложить файл
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="ach-title">Название</Label>
+            <Input
+              id="ach-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Международная олимпиада по физике"
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Тип</Label>
+            <Select value={category} onValueChange={(v) => setCategory(v as Achievement["category"])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ACHIEVEMENT_CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ach-desc">Описание</Label>
+            <Textarea
+              id="ach-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Коротко опиши, в чём заключалось достижение"
+              rows={3}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ach-file">Файл (сертификат, диплом, портфолио)</Label>
+            <Input
+              id="ach-file"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="ghost">Отмена</Button>
+            </DialogClose>
+            <Button type="submit" disabled={createMutation.isPending || !title.trim()}>
+              {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Добавить"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

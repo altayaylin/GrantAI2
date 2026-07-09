@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { University, MatchResult, MyListItem, Profile, Deadline } from "@/lib/types";
+import type { University, MatchResult, MyListItem, Profile, Deadline, Achievement } from "@/lib/types";
 import type { Opportunity } from "@/lib/opportunities";
 
 const rawBase = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
@@ -74,6 +74,31 @@ export const api = {
   activities: {
     list: (category?: string): Promise<Opportunity[]> =>
       apiFetch(`/activities/${category ? `?category=${encodeURIComponent(category)}` : ""}`),
+  },
+
+  achievements: {
+    list: (): Promise<Achievement[]> => apiFetch("/achievements/"),
+    create: (data: {
+      title: string;
+      description?: string;
+      category: "activity" | "award";
+      file_url?: string;
+      file_name?: string;
+    }): Promise<Achievement> =>
+      apiFetch("/achievements/", { method: "POST", body: JSON.stringify(data) }),
+    remove: (id: string): Promise<{ status: string }> =>
+      apiFetch(`/achievements/${id}`, { method: "DELETE" }),
+    uploadFile: async (file: File): Promise<{ url: string; name: string }> => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new Error("Не авторизован");
+      const ext = file.name.includes(".") ? file.name.split(".").pop() : "";
+      const path = `${userId}/${crypto.randomUUID()}${ext ? `.${ext}` : ""}`;
+      const { error } = await supabase.storage.from("achievements").upload(path, file);
+      if (error) throw new Error(error.message);
+      const { data } = supabase.storage.from("achievements").getPublicUrl(path);
+      return { url: data.publicUrl, name: file.name };
+    },
   },
 
   deadlines: {
