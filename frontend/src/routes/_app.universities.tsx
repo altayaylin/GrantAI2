@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_app/universities")({
 function UniversitiesPage() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
-  const [onlyMyMajor, setOnlyMyMajor] = useState(false);
+  const [showAllMajors, setShowAllMajors] = useState(false);
 
   const { data: universities = [], isLoading, error } = useQuery({
     queryKey: ["universities"],
@@ -67,6 +67,8 @@ function UniversitiesPage() {
     return m;
   }, [myList]);
 
+  const majorFilterActive = !!profile?.major && !showAllMajors;
+
   const filtered = universities.filter((u) => {
     const q = query.toLowerCase();
     const matchesQuery =
@@ -75,8 +77,8 @@ function UniversitiesPage() {
       u.country.toLowerCase().includes(q) ||
       u.majors.some((t) => t.toLowerCase().includes(q));
     const matchesMajor =
-      !onlyMyMajor || !profile?.major ||
-      u.majors.some((t) => t.toLowerCase() === profile.major!.toLowerCase());
+      !majorFilterActive ||
+      u.majors.some((t) => t.toLowerCase() === profile!.major!.toLowerCase());
     return matchesQuery && matchesMajor;
   });
 
@@ -140,18 +142,24 @@ function UniversitiesPage() {
           {profile?.major && (
             <button
               type="button"
-              onClick={() => setOnlyMyMajor((v) => !v)}
+              onClick={() => setShowAllMajors((v) => !v)}
               className={`h-10 px-4 rounded-xl text-sm border transition-colors inline-flex items-center gap-1.5 shrink-0 ${
-                onlyMyMajor
+                majorFilterActive
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card border-border hover:border-primary/40"
               }`}
             >
-              {onlyMyMajor && <Check className="h-3.5 w-3.5" />}
-              <Star className="h-3.5 w-3.5" /> Мой мейджор: {profile.major}
+              {majorFilterActive && <Check className="h-3.5 w-3.5" />}
+              <Star className="h-3.5 w-3.5" />
+              {majorFilterActive ? `Только ${profile.major}` : "Показать все направления"}
             </button>
           )}
         </div>
+        {majorFilterActive && (
+          <p className="text-sm text-muted-foreground px-1">
+            Показаны только вузы с направлением «{profile!.major}». Нажми на кнопку выше, чтобы посмотреть остальные.
+          </p>
+        )}
         <p className="text-sm text-muted-foreground px-1">
           Выбор целевых стран вы можете сделать в разделе{" "}
           <Link
@@ -268,7 +276,9 @@ function UniversitiesPage() {
 
       {filtered.length === 0 && !isLoading && (
         <div className="text-center py-16 text-muted-foreground text-sm">
-          Ничего не найдено — попробуй другой запрос.
+          {majorFilterActive
+            ? <>Ни один вуз в базе не предлагает «{profile!.major}». <button type="button" onClick={() => setShowAllMajors(true)} className="text-primary font-medium hover:underline">Показать все направления</button>.</>
+            : "Ничего не найдено — попробуй другой запрос."}
         </div>
       )}
     </div>
