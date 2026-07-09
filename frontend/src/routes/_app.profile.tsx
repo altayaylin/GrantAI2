@@ -1,19 +1,46 @@
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin, School, GraduationCap, Globe2, Target,
-  Sparkles, Pencil, Plus, Download, ArrowRight, Loader2,
+  Sparkles, Pencil, Plus, Download, ArrowRight, Loader2, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  DialogFooter, DialogClose,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
-import { formatAcceptance, type MyListItem } from "@/lib/types";
+import { formatAcceptance, type MyListItem, type Profile } from "@/lib/types";
+import { toast } from "sonner";
+
+const MAJORS = [
+  "Computer Science", "Engineering", "Business", "Economics", "Mathematics",
+  "Physics", "Biology", "Medicine", "Law", "Political Science",
+  "International Relations", "Psychology", "Architecture", "Design Science",
+];
+
+const GRADES = [9, 10, 11, 12];
+
+function clampNumber(raw: string, min: number, max: number): string {
+  if (raw.trim() === "") return raw;
+  const n = Number(raw);
+  if (Number.isNaN(n)) return raw;
+  return String(Math.min(max, Math.max(min, n)));
+}
 
 export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
 
 function ProfilePage() {
+  const [editOpen, setEditOpen] = useState(false);
+
   const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: () => api.profile.get(),
@@ -58,9 +85,10 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-sm mx-auto">
           Заполни анкету, чтобы мы могли подобрать университеты и показать твою статистику здесь.
         </p>
-        <Button asChild>
-          <Link to="/onboarding">Заполнить профиль <ArrowRight className="h-4 w-4" /></Link>
+        <Button onClick={() => setEditOpen(true)}>
+          Заполнить профиль <ArrowRight className="h-4 w-4" />
         </Button>
+        <EditProfileDialog profile={null} open={editOpen} onOpenChange={setEditOpen} />
       </div>
     );
   }
@@ -93,8 +121,12 @@ function ProfilePage() {
             </div>
           </div>
           <div className="flex gap-3 self-center lg:self-end">
-            <Button asChild variant="secondary" className="h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/10 font-bold">
-              <Link to="/onboarding"><Pencil className="mr-2 h-4 w-4" /> Редактировать</Link>
+            <Button
+              variant="secondary"
+              className="h-11 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/10 font-bold"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil className="mr-2 h-4 w-4" /> Редактировать
             </Button>
             <Button variant="secondary" className="h-11 px-6 rounded-xl bg-white text-[#0F3269] hover:bg-blue-50 font-bold shadow-lg">
               <Download className="mr-2 h-4 w-4" /> Экспорт CV
@@ -102,6 +134,8 @@ function ProfilePage() {
           </div>
         </div>
       </section>
+
+      <EditProfileDialog profile={profile} open={editOpen} onOpenChange={setEditOpen} />
 
       {/* Direction + Countries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -190,6 +224,294 @@ function ProfilePage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function EditProfileDialog({
+  profile, open, onOpenChange,
+}: {
+  profile: Profile | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const qc = useQueryClient();
+
+  const [fullName, setFullName] = useState("");
+  const [school, setSchool] = useState("");
+  const [city, setCity] = useState("");
+  const [grade, setGrade] = useState<number | null>(null);
+  const [major, setMajor] = useState("");
+  const [customMajor, setCustomMajor] = useState("");
+  const [countries, setCountries] = useState<string[]>([]);
+  const [gpa, setGpa] = useState("");
+  const [gpaScale, setGpaScale] = useState("4");
+  const [satTotal, setSatTotal] = useState("");
+  const [satMath, setSatMath] = useState("");
+  const [satEbrw, setSatEbrw] = useState("");
+  const [ielts, setIelts] = useState("");
+  const [toefl, setToefl] = useState("");
+
+  const gpaMax = Number(gpaScale) || 4;
+
+  const { data: universities = [] } = useQuery({
+    queryKey: ["universities"],
+    queryFn: () => api.universities.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const countryOptions = useMemo(
+    () => Array.from(new Set(universities.map((u) => u.country))).sort(),
+    [universities],
+  );
+
+  // Reset the form to the current profile every time the dialog opens
+  useEffect(() => {
+    if (!open) return;
+    setFullName(profile?.full_name ?? "");
+    setSchool(profile?.school ?? "");
+    setCity(profile?.city ?? "");
+    setGrade(profile?.grade ?? null);
+    const m = profile?.major ?? "";
+    setMajor(m && !MAJORS.includes(m) ? "Другое" : m);
+    setCustomMajor(m && !MAJORS.includes(m) ? m : "");
+    setCountries(profile?.target_countries ?? []);
+    setGpa(profile?.gpa != null ? String(profile.gpa) : "");
+    setGpaScale(profile?.gpa_scale ? String(profile.gpa_scale) : "4");
+    setSatTotal(profile?.sat_total != null ? String(profile.sat_total) : "");
+    setSatMath(profile?.sat_math != null ? String(profile.sat_math) : "");
+    setSatEbrw(profile?.sat_ebrw != null ? String(profile.sat_ebrw) : "");
+    setIelts(profile?.ielts != null ? String(profile.ielts) : "");
+    setToefl(profile?.toefl != null ? String(profile.toefl) : "");
+  }, [open, profile]);
+
+  function toggleCountry(c: string) {
+    setCountries((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: (data: Partial<Profile>) => api.profile.save(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Профиль обновлён");
+      onOpenChange(false);
+    },
+    onError: () => toast.error("Не удалось сохранить профиль"),
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const resolvedMajor = major === "Другое" ? customMajor.trim() : major;
+    saveMutation.mutate({
+      full_name: fullName.trim() || undefined,
+      school: school.trim() || undefined,
+      city: city.trim() || undefined,
+      grade: grade ?? undefined,
+      major: resolvedMajor || undefined,
+      target_countries: countries.length ? countries : undefined,
+      gpa: gpa ? Number(clampNumber(gpa, 0, gpaMax)) : undefined,
+      gpa_scale: gpaScale ? Number(gpaScale) : undefined,
+      sat_total: satTotal ? Number(clampNumber(satTotal, 400, 1600)) : undefined,
+      sat_math: satMath ? Number(clampNumber(satMath, 200, 800)) : undefined,
+      sat_ebrw: satEbrw ? Number(clampNumber(satEbrw, 200, 800)) : undefined,
+      ielts: ielts ? Number(clampNumber(ielts, 0, 9)) : undefined,
+      toefl: toefl ? Number(clampNumber(toefl, 0, 120)) : undefined,
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Редактировать профиль</DialogTitle>
+          <DialogDescription>Изменения сохранятся сразу и сразу появятся на странице профиля.</DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Tabs defaultValue="basic">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="basic">О тебе</TabsTrigger>
+              <TabsTrigger value="focus">Направление</TabsTrigger>
+              <TabsTrigger value="scores">Баллы</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-4 pt-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 space-y-1.5">
+                  <Label htmlFor="ep-name">Имя и фамилия</Label>
+                  <Input
+                    id="ep-name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Алишер Нуржанов"
+                  />
+                </div>
+                <div className="col-span-2 space-y-1.5">
+                  <Label htmlFor="ep-school">Школа</Label>
+                  <Input
+                    id="ep-school"
+                    value={school}
+                    onChange={(e) => setSchool(e.target.value)}
+                    placeholder="НИШ ФМН Алматы"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-city">Город</Label>
+                  <Input
+                    id="ep-city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Алматы"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Класс</Label>
+                  <Select value={grade ? String(grade) : undefined} onValueChange={(v) => setGrade(Number(v))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выбери класс" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GRADES.map((g) => (
+                        <SelectItem key={g} value={String(g)}>{g} класс</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="focus" className="space-y-4 pt-3">
+              <div className="space-y-1.5">
+                <Label>Основной мейджор</Label>
+                <Select value={major || undefined} onValueChange={setMajor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выбери направление" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MAJORS.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                    <SelectItem value="Другое">Другое</SelectItem>
+                  </SelectContent>
+                </Select>
+                {major === "Другое" && (
+                  <Input
+                    value={customMajor}
+                    onChange={(e) => setCustomMajor(e.target.value)}
+                    placeholder="Укажи свой мейджор"
+                    className="mt-2"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Целевые страны</Label>
+                <div className="flex flex-wrap gap-2 rounded-xl border border-border p-3 max-h-48 overflow-y-auto">
+                  {countryOptions.length === 0 ? (
+                    <span className="text-sm text-muted-foreground">Список стран загружается…</span>
+                  ) : (
+                    countryOptions.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleCountry(c)}
+                        className={`px-3 h-9 rounded-lg text-sm border transition-colors inline-flex items-center gap-1.5 ${
+                          countries.includes(c)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-card border-border hover:border-primary/40"
+                        }`}
+                      >
+                        {countries.includes(c) && <Check className="h-3 w-3" />}
+                        {c}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="scores" className="space-y-4 pt-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-gpa">{`GPA (0–${gpaMax})`}</Label>
+                  <Input
+                    id="ep-gpa" type="number" step="0.01" min={0} max={gpaMax} value={gpa}
+                    onChange={(e) => setGpa(e.target.value)}
+                    onBlur={() => setGpa((v) => clampNumber(v, 0, gpaMax))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Шкала GPA</Label>
+                  <Select
+                    value={gpaScale}
+                    onValueChange={(v) => {
+                      setGpaScale(v);
+                      setGpa((g) => clampNumber(g, 0, Number(v)));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="4">4.0</SelectItem>
+                      <SelectItem value="5">5.0</SelectItem>
+                      <SelectItem value="10">10.0</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-sat">SAT total (400–1600)</Label>
+                  <Input
+                    id="ep-sat" type="number" step="10" min={400} max={1600} value={satTotal}
+                    onChange={(e) => setSatTotal(e.target.value)}
+                    onBlur={() => setSatTotal((v) => clampNumber(v, 400, 1600))}
+                  />
+                </div>
+                <div />
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-sat-math">SAT Math (200–800)</Label>
+                  <Input
+                    id="ep-sat-math" type="number" step="10" min={200} max={800} value={satMath}
+                    onChange={(e) => setSatMath(e.target.value)}
+                    onBlur={() => setSatMath((v) => clampNumber(v, 200, 800))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-sat-ebrw">SAT EBRW (200–800)</Label>
+                  <Input
+                    id="ep-sat-ebrw" type="number" step="10" min={200} max={800} value={satEbrw}
+                    onChange={(e) => setSatEbrw(e.target.value)}
+                    onBlur={() => setSatEbrw((v) => clampNumber(v, 200, 800))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-ielts">IELTS (0–9)</Label>
+                  <Input
+                    id="ep-ielts" type="number" step="0.5" min={0} max={9} value={ielts}
+                    onChange={(e) => setIelts(e.target.value)}
+                    onBlur={() => setIelts((v) => clampNumber(v, 0, 9))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ep-toefl">TOEFL (0–120)</Label>
+                  <Input
+                    id="ep-toefl" type="number" min={0} max={120} value={toefl}
+                    onChange={(e) => setToefl(e.target.value)}
+                    onBlur={() => setToefl((v) => clampNumber(v, 0, 120))}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="ghost">Отмена</Button>
+            </DialogClose>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Сохранить"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
