@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_app/universities")({
 function UniversitiesPage() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
+  const [onlyMyMajor, setOnlyMyMajor] = useState(false);
 
   const { data: universities = [], isLoading, error } = useQuery({
     queryKey: ["universities"],
@@ -26,6 +27,12 @@ function UniversitiesPage() {
   const { data: myList = [] } = useQuery({
     queryKey: ["my-list"],
     queryFn: () => api.universities.myList(),
+  });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.profile.get(),
+    retry: false,
   });
 
   const addMutation = useMutation({
@@ -62,12 +69,15 @@ function UniversitiesPage() {
 
   const filtered = universities.filter((u) => {
     const q = query.toLowerCase();
-    return (
+    const matchesQuery =
       !query ||
       u.name.toLowerCase().includes(q) ||
       u.country.toLowerCase().includes(q) ||
-      u.majors.some((t) => t.toLowerCase().includes(q))
-    );
+      u.majors.some((t) => t.toLowerCase().includes(q));
+    const matchesMajor =
+      !onlyMyMajor || !profile?.major ||
+      u.majors.some((t) => t.toLowerCase() === profile.major!.toLowerCase());
+    return matchesQuery && matchesMajor;
   });
 
   if (isLoading) {
@@ -117,14 +127,30 @@ function UniversitiesPage() {
 
       {/* Filters */}
       <div className="space-y-2.5">
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Найти университет, страну или специальность…"
-            className="w-full h-10 pl-9 pr-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:border-primary transition-colors"
-          />
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Найти университет, страну или специальность…"
+              className="w-full h-10 pl-9 pr-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+          {profile?.major && (
+            <button
+              type="button"
+              onClick={() => setOnlyMyMajor((v) => !v)}
+              className={`h-10 px-4 rounded-xl text-sm border transition-colors inline-flex items-center gap-1.5 shrink-0 ${
+                onlyMyMajor
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border hover:border-primary/40"
+              }`}
+            >
+              {onlyMyMajor && <Check className="h-3.5 w-3.5" />}
+              <Star className="h-3.5 w-3.5" /> Мой мейджор: {profile.major}
+            </button>
+          )}
         </div>
         <p className="text-sm text-muted-foreground px-1">
           Выбор целевых стран вы можете сделать в разделе{" "}
@@ -184,9 +210,19 @@ function UniversitiesPage() {
               </div>
 
               <div className="flex flex-wrap gap-1.5">
-                {uniTags(u).map((t) => (
-                  <Badge key={t} variant="secondary" className="font-normal">{t}</Badge>
-                ))}
+                {uniTags(u, profile?.major).map((t) => {
+                  const isMyMajor = profile?.major && t.toLowerCase() === profile.major.toLowerCase();
+                  return (
+                    <Badge
+                      key={t}
+                      variant={isMyMajor ? "default" : "secondary"}
+                      className={isMyMajor ? "font-semibold gap-1" : "font-normal"}
+                    >
+                      {isMyMajor && <Star className="h-3 w-3" />}
+                      {t}
+                    </Badge>
+                  );
+                })}
                 {u.has_scholarship && (
                   <Badge variant="secondary" className="font-normal bg-emerald-500/10 text-emerald-700">Стипендия</Badge>
                 )}

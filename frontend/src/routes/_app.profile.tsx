@@ -72,12 +72,7 @@ function ProfilePage() {
     { label: "TOEFL", value: profile?.toefl ? String(profile.toefl) : "—",         sub: "не сдавал",       tone: profile?.toefl ? "emerald" : "muted" },
   ];
 
-  const targetCountries = Array.from(
-    new Set([
-      ...(profile?.target_countries ?? []),
-      ...myList.map((item: MyListItem) => item.universities?.country).filter(Boolean),
-    ]),
-  ) as string[];
+  const targetCountries = profile?.target_countries ?? [];
 
   if (profileLoading || listLoading) {
     return (
@@ -167,12 +162,9 @@ function ProfilePage() {
                     <CountryFlag country={c} className="h-3.5 w-5" />{c}
                   </div>
                 ))
-              : <p className="text-sm text-muted-foreground">Выбери страны в профиле или добавь вузы — они появятся здесь</p>
+              : <p className="text-sm text-muted-foreground">Выбери страны в профиле — они появятся здесь</p>
             }
           </div>
-          {myList.length > 0 && (
-            <div className="text-[11px] text-muted-foreground mt-3">Включает страны из профиля и выбранных университетов</div>
-          )}
         </Card>
       </div>
 

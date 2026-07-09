@@ -78,7 +78,11 @@ export function formatTuition(usd: number | null): string {
   return `$${Math.round(usd / 1000)}k/год`;
 }
 
-export function uniTags(u: University): string[] {
+export function uniTags(u: University, highlightMajor?: string | null): string[] {
+  if (highlightMajor && u.majors.some((m) => m.toLowerCase() === highlightMajor.toLowerCase())) {
+    const rest = u.majors.filter((m) => m.toLowerCase() !== highlightMajor.toLowerCase());
+    return [highlightMajor, ...rest].slice(0, 3);
+  }
   return u.majors.slice(0, 3);
 }
 
