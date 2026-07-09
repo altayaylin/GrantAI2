@@ -77,6 +77,11 @@ def test_hard_filter_no_major_excludes():
     assert passes_hard_filters(student, make_mit()) is False
 
 
+def test_hard_filter_major_case_insensitive():
+    student = make_student(major="computer science  ")
+    assert passes_hard_filters(student, make_mit()) is True
+
+
 def test_hard_filter_uni_without_majors_excludes():
     student = make_student()
     uni = make_mit()

@@ -16,7 +16,10 @@ def passes_hard_filters(student: StudentProfile, uni: University) -> bool:
     """
     if not student.target_countries or uni.country not in student.target_countries:
         return False
-    if not student.major or not uni.majors or student.major not in uni.majors:
+    if not student.major or not uni.majors:
+        return False
+    student_major = student.major.strip().lower()
+    if student_major not in (m.strip().lower() for m in uni.majors):
         return False
     if uni.min_ielts and student.ielts and student.ielts < uni.min_ielts:
         return False
