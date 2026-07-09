@@ -67,9 +67,21 @@ def test_hard_filter_ielts():
     assert passes_hard_filters(student, make_tu_delft()) is False
 
 
-def test_hard_filter_no_target_countries():
+def test_hard_filter_no_target_countries_excludes():
     student = make_student(target_countries=[])
-    assert passes_hard_filters(student, make_mit()) is True
+    assert passes_hard_filters(student, make_mit()) is False
+
+
+def test_hard_filter_no_major_excludes():
+    student = make_student(major=None)
+    assert passes_hard_filters(student, make_mit()) is False
+
+
+def test_hard_filter_uni_without_majors_excludes():
+    student = make_student()
+    uni = make_mit()
+    uni.majors = []
+    assert passes_hard_filters(student, uni) is False
 
 
 # --- Category tests ---
@@ -111,8 +123,8 @@ def test_match_universities_filters_country():
 
 
 def test_match_universities_sorted_by_score():
-    student = make_student(target_countries=[])
+    student = make_student(target_countries=["USA", "Netherlands"])
     universities = [make_mit(), make_tu_delft()]
     results = match_universities(student, universities)
-    if len(results) >= 2:
-        assert results[0].match_score >= results[1].match_score
+    assert len(results) == 2
+    assert results[0].match_score >= results[1].match_score

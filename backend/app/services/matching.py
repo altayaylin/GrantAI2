@@ -8,10 +8,15 @@ def clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 
 def passes_hard_filters(student: StudentProfile, uni: University) -> bool:
-    """Жёсткие фильтры: вуз вылетает, если не проходит базовые требования."""
-    if student.target_countries and uni.country not in student.target_countries:
+    """Жёсткие фильтры: вуз вылетает, если не проходит базовые требования.
+
+    Рекомендации показываются только по выбранным целевым странам и только
+    если мейджор студента есть среди специальностей вуза — оба условия
+    обязательны, без профиля (страны/мейджор) подбор не выдаёт ничего.
+    """
+    if not student.target_countries or uni.country not in student.target_countries:
         return False
-    if uni.majors and student.major and student.major not in uni.majors:
+    if not student.major or not uni.majors or student.major not in uni.majors:
         return False
     if uni.min_ielts and student.ielts and student.ielts < uni.min_ielts:
         return False

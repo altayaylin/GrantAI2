@@ -23,7 +23,7 @@ import { toast } from "sonner";
 const MAJORS = [
   "Computer Science", "Engineering", "Business", "Economics", "Mathematics",
   "Physics", "Biology", "Medicine", "Law", "Political Science",
-  "International Relations", "Psychology", "Architecture", "Design Science",
+  "International Relations", "Psychology", "Architecture", "Design",
 ];
 
 const GRADES = [9, 10, 11, 12];
