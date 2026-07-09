@@ -319,13 +319,38 @@ function EditProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Редактировать профиль</DialogTitle>
-          <DialogDescription>Изменения сохранятся сразу и сразу появятся на странице профиля.</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden gap-0 p-0 [&>button]:z-20 [&>button]:rounded-full [&>button]:text-white [&>button]:opacity-80 [&>button]:hover:bg-white/10 [&>button]:hover:opacity-100">
+        <div
+          className="relative overflow-hidden px-6 py-6 text-white shrink-0"
+          style={{ background: "linear-gradient(135deg, #0F3269 0%, #1A4D9C 100%)" }}
+        >
+          <div className="absolute -top-12 -right-8 h-36 w-36 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-[#3B82F6]/25 blur-3xl pointer-events-none" />
+          <DialogHeader className="relative z-10">
+            <div className="flex items-center gap-3.5">
+              <div
+                className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 shadow-lg"
+                style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                <Pencil className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <DialogTitle
+                  className="font-display text-xl font-extrabold text-white tracking-tight"
+                  style={{ textShadow: "0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.35)" }}
+                >
+                  Редактировать профиль
+                </DialogTitle>
+                <DialogDescription className="text-blue-100/70 text-xs mt-0.5">
+                  Изменения сохранятся сразу и появятся на странице профиля
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
+          <div className="space-y-5 px-6 py-5 overflow-y-auto">
           <Tabs defaultValue="basic">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">О тебе</TabsTrigger>
@@ -500,12 +525,18 @@ function EditProfileDialog({
               </div>
             </TabsContent>
           </Tabs>
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
             <DialogClose asChild>
               <Button type="button" variant="ghost">Отмена</Button>
             </DialogClose>
-            <Button type="submit" disabled={saveMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="rounded-xl font-bold text-white border-0 shadow-lg transition-all hover:brightness-110 hover:shadow-[0_0_20px_rgba(59,130,246,0.45)]"
+              style={{ background: "linear-gradient(135deg, #1A4D9C 0%, #3B82F6 100%)" }}
+            >
               {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Сохранить"}
             </Button>
           </DialogFooter>
