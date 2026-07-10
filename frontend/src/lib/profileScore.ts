@@ -35,10 +35,52 @@ function resolveContribution(achievement: Pick<Achievement, "type" | "level">): 
   return TYPE_WEIGHTS[achievement.type] ?? {};
 }
 
+// Реальные баллы из профиля (GPA/SAT/IELTS/TOEFL) — база для категории Academics,
+// поверх которой суммируются очки от достижений (олимпиады, research и т.д.)
+export type AcademicInputs = {
+  gpa: number | null;
+  gpaScale: number | null;
+  satTotal: number | null;
+  ielts: number | null;
+  toefl: number | null;
+};
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function computeAcademicBase(inputs?: AcademicInputs): number {
+  if (!inputs) return 0;
+  const axes: { value: number; weight: number }[] = [];
+
+  if (inputs.gpa) {
+    axes.push({ value: clamp01(inputs.gpa / (inputs.gpaScale || 4)), weight: 0.4 });
+  }
+  if (inputs.satTotal) {
+    axes.push({ value: clamp01((inputs.satTotal - 400) / 1200), weight: 0.4 });
+  }
+  if (inputs.ielts) {
+    axes.push({ value: clamp01(inputs.ielts / 9), weight: 0.2 });
+  } else if (inputs.toefl) {
+    axes.push({ value: clamp01(inputs.toefl / 120), weight: 0.2 });
+  }
+
+  if (axes.length === 0) return 0;
+  const totalWeight = axes.reduce((sum, a) => sum + a.weight, 0);
+  const weighted = axes.reduce((sum, a) => sum + a.value * a.weight, 0);
+  return Math.round((weighted / totalWeight) * 100);
+}
+
 export function scoreProfile(
   achievements: Pick<Achievement, "type" | "level">[],
+  academicInputs?: AcademicInputs,
 ): { scores: CategoryScores; overall: number } {
-  const scores: CategoryScores = { academics: 0, activities: 0, leadership: 0, awards: 0 };
+  const scores: CategoryScores = {
+    academics: computeAcademicBase(academicInputs),
+    activities: 0,
+    leadership: 0,
+    awards: 0,
+  };
 
   for (const achievement of achievements) {
     const contribution = resolveContribution(achievement);

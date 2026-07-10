@@ -94,14 +94,20 @@ function CategoryBar({
 }
 
 export function ProfileAnalysis() {
-  const { data: achievements = [], isLoading } = useQuery({
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
     queryKey: ["achievements"],
     queryFn: () => api.achievements.list(),
   });
 
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.profile.get(),
+    retry: false,
+  });
+
   const animate = useMountAnimation();
 
-  if (isLoading) {
+  if (achievementsLoading || profileLoading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" /> Загружаем анализ профиля…
@@ -109,9 +115,15 @@ export function ProfileAnalysis() {
     );
   }
 
-  const { scores, overall } = scoreProfile(achievements);
+  const { scores, overall } = scoreProfile(achievements, {
+    gpa: profile?.gpa ?? null,
+    gpaScale: profile?.gpa_scale ?? null,
+    satTotal: profile?.sat_total ?? null,
+    ielts: profile?.ielts ?? null,
+    toefl: profile?.toefl ?? null,
+  });
   const insights = getInsights(scores);
-  const isEmpty = achievements.length === 0;
+  const isEmpty = overall === 0;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -132,7 +144,7 @@ export function ProfileAnalysis() {
         </div>
         {isEmpty && (
           <p className="text-xs text-muted-foreground mt-5 text-center">
-            Добавь первую активность, чтобы увидеть анализ
+            Добавь достижения или заполни баллы (GPA, SAT, IELTS) в профиле, чтобы увидеть анализ
           </p>
         )}
       </section>
@@ -146,7 +158,7 @@ export function ProfileAnalysis() {
         </div>
         {isEmpty ? (
           <p className="text-sm text-muted-foreground text-center py-6">
-            Добавь первую активность, чтобы увидеть анализ
+            Добавь достижения или заполни баллы (GPA, SAT, IELTS) в профиле, чтобы увидеть анализ
           </p>
         ) : (
           <div className="space-y-4">
