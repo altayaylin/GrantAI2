@@ -17,6 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CountryFlag } from "@/components/shared/CountryFlag";
+import { ProfileAnalysis } from "@/components/ProfileAnalysis";
 import { LEVEL_META } from "@/lib/target-unis";
 import { api } from "@/lib/api";
 import { formatAcceptance, type MyListItem, type Profile, type Achievement } from "@/lib/types";
@@ -143,6 +144,8 @@ function ProfilePage() {
       </section>
 
       <EditProfileDialog profile={profile} open={editOpen} onOpenChange={setEditOpen} initialTab={editTab} />
+
+      <ProfileAnalysis />
 
       {/* Direction + Countries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -600,6 +603,22 @@ const ACHIEVEMENT_CATEGORIES: { value: Achievement["category"]; label: string }[
   { value: "award", label: "Награда" },
 ];
 
+const ACHIEVEMENT_TYPES: { value: NonNullable<Achievement["type"]>; label: string }[] = [
+  { value: "olympiad", label: "Олимпиада" },
+  { value: "volunteering", label: "Волонтёрство" },
+  { value: "internship", label: "Стажировка" },
+  { value: "leadership", label: "Лидерство" },
+  { value: "project", label: "Проект" },
+  { value: "research", label: "Исследование" },
+];
+
+const ACHIEVEMENT_LEVELS: { value: NonNullable<Achievement["level"]>; label: string }[] = [
+  { value: "school", label: "Школьный" },
+  { value: "city", label: "Городской" },
+  { value: "national", label: "Республиканский" },
+  { value: "international", label: "Международный" },
+];
+
 function AchievementsCard() {
   const qc = useQueryClient();
   const [manualOpen, setManualOpen] = useState(false);
@@ -696,6 +715,8 @@ function useCreateAchievementMutation(onSaved: () => void) {
     mutationFn: async (vars: {
       title: string;
       category: Achievement["category"];
+      type: Achievement["type"];
+      level: Achievement["level"];
       description: string;
       file: File | null;
     }) => {
@@ -710,6 +731,8 @@ function useCreateAchievementMutation(onSaved: () => void) {
         title: vars.title.trim(),
         description: vars.description.trim() || undefined,
         category: vars.category,
+        type: vars.type,
+        level: vars.type === "olympiad" ? vars.level ?? undefined : undefined,
         file_url,
         file_name,
       });
@@ -732,12 +755,16 @@ function ManualAchievementDialog({
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<Achievement["category"]>("activity");
+  const [type, setType] = useState<NonNullable<Achievement["type"]>>("project");
+  const [level, setLevel] = useState<NonNullable<Achievement["level"]>>("school");
   const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setTitle("");
     setCategory("activity");
+    setType("project");
+    setLevel("school");
     setDescription("");
   }, [open]);
 
@@ -746,7 +773,7 @@ function ManualAchievementDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    createMutation.mutate({ title, category, description, file: null });
+    createMutation.mutate({ title, category, type, level, description, file: null });
   }
 
   return (
@@ -767,17 +794,43 @@ function ManualAchievementDialog({
               required
             />
           </div>
-          <div className="space-y-1.5">
-            <Label>Тип</Label>
-            <Select value={category} onValueChange={(v) => setCategory(v as Achievement["category"])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ACHIEVEMENT_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Категория</Label>
+              <Select value={category} onValueChange={(v) => setCategory(v as Achievement["category"])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACHIEVEMENT_CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Тип</Label>
+              <Select value={type} onValueChange={(v) => setType(v as NonNullable<Achievement["type"]>)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACHIEVEMENT_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          {type === "olympiad" && (
+            <div className="space-y-1.5">
+              <Label>Уровень</Label>
+              <Select value={level} onValueChange={(v) => setLevel(v as NonNullable<Achievement["level"]>)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACHIEVEMENT_LEVELS.map((l) => (
+                    <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="ach-desc">Описание</Label>
             <Textarea
@@ -812,6 +865,8 @@ function FileAchievementDialog({
   const [recognized, setRecognized] = useState<{
     title: string;
     category: Achievement["category"];
+    type: NonNullable<Achievement["type"]>;
+    level: NonNullable<Achievement["level"]>;
     description: string;
   } | null>(null);
 
@@ -824,7 +879,13 @@ function FileAchievementDialog({
   const extractMutation = useMutation({
     mutationFn: (f: File) => api.achievements.extract(f),
     onSuccess: (result) => {
-      setRecognized(result);
+      setRecognized({
+        title: result.title,
+        category: result.category,
+        type: result.type ?? "project",
+        level: result.level ?? "school",
+        description: result.description,
+      });
       toast.success("Данные распознаны — проверь и сохрани");
     },
     onError: () => toast.error("Не удалось распознать документ"),
@@ -883,20 +944,52 @@ function FileAchievementDialog({
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label>Тип</Label>
-              <Select
-                value={recognized.category}
-                onValueChange={(v) => setRecognized({ ...recognized, category: v as Achievement["category"] })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ACHIEVEMENT_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Категория</Label>
+                <Select
+                  value={recognized.category}
+                  onValueChange={(v) => setRecognized({ ...recognized, category: v as Achievement["category"] })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ACHIEVEMENT_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Тип</Label>
+                <Select
+                  value={recognized.type}
+                  onValueChange={(v) => setRecognized({ ...recognized, type: v as NonNullable<Achievement["type"]> })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ACHIEVEMENT_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            {recognized.type === "olympiad" && (
+              <div className="space-y-1.5">
+                <Label>Уровень</Label>
+                <Select
+                  value={recognized.level}
+                  onValueChange={(v) => setRecognized({ ...recognized, level: v as NonNullable<Achievement["level"]> })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ACHIEVEMENT_LEVELS.map((l) => (
+                      <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="ach-file-desc">Описание</Label>
               <Textarea

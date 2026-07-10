@@ -82,6 +82,8 @@ export const api = {
       title: string;
       description?: string;
       category: "activity" | "award";
+      type: Achievement["type"];
+      level?: Achievement["level"];
       file_url?: string;
       file_name?: string;
     }): Promise<Achievement> =>
@@ -102,6 +104,8 @@ export const api = {
     extract: async (file: File): Promise<{
       title: string;
       category: "activity" | "award";
+      type: Achievement["type"];
+      level: Achievement["level"];
       description: string;
     }> => {
       const token = await getToken();

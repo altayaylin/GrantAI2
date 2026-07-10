@@ -22,16 +22,28 @@ EXTRACTION_MODEL = "deepseek-v4-flash"
 
 TESSERACT_LANG = "rus+eng"
 
+ACHIEVEMENT_TYPES = ("olympiad", "volunteering", "internship", "leadership", "project", "research")
+ACHIEVEMENT_LEVELS = ("school", "city", "national", "international")
+
 EXTRACTION_SYSTEM_PROMPT = (
     "Ты помогаешь заполнить профиль школьника по OCR-тексту документа о достижении "
     "(сертификат, диплом, грамота, рекомендательное письмо, справка об участии). "
     "Текст мог быть распознан с ошибками — исправляй очевидные опечатки OCR по смыслу. "
     "Верни ТОЛЬКО JSON вида "
-    '{"title": string, "category": "activity" | "award", "description": string}. '
+    '{"title": string, "category": "activity" | "award", '
+    '"type": "olympiad" | "volunteering" | "internship" | "leadership" | "project" | "research", '
+    '"level": "school" | "city" | "national" | "international" | null, "description": string}. '
     "category = 'award', если это награда/победа (медаль, диплом победителя, призовое "
     "место); 'activity' — если это участие, активность или волонтёрство без явной победы. "
-    "title — короткое название (до 80 символов). description — 1-2 предложения на русском. "
-    "Если текст слишком скудный или нечитаемый, сделай наилучшее предположение, не отказывайся."
+    "type определи по смыслу документа: 'olympiad' — олимпиада или предметный конкурс, "
+    "'volunteering' — волонтёрство, 'internship' — стажировка, 'leadership' — организаторская "
+    "или лидерская роль (совет, клуб, капитан команды), 'project' — самостоятельный проект, "
+    "'research' — исследовательская работа или публикация. level указывай ТОЛЬКО если "
+    "type = 'olympiad': 'school' — школьный уровень, 'city' — городской/областной, "
+    "'national' — республиканский/национальный, 'international' — международный. Для остальных "
+    "type всегда ставь level = null. title — короткое название (до 80 символов). description — "
+    "1-2 предложения на русском. Если текст слишком скудный или нечитаемый, сделай наилучшее "
+    "предположение, не отказывайся."
 )
 
 
@@ -105,6 +117,10 @@ async def extract_achievement(
 
     if data.get("category") not in ("activity", "award"):
         data["category"] = "activity"
+    if data.get("type") not in ACHIEVEMENT_TYPES:
+        data["type"] = None
+    if data.get("type") != "olympiad" or data.get("level") not in ACHIEVEMENT_LEVELS:
+        data["level"] = None
     return data
 
 
