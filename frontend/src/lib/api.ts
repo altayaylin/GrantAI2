@@ -84,6 +84,7 @@ export const api = {
       category: "activity" | "award";
       type: Achievement["type"];
       level?: Achievement["level"];
+      prestige?: Achievement["prestige"];
       file_url?: string;
       file_name?: string;
     }): Promise<Achievement> =>
@@ -106,6 +107,7 @@ export const api = {
       category: "activity" | "award";
       type: Achievement["type"];
       level: Achievement["level"];
+      prestige: Achievement["prestige"];
       description: string;
     }> => {
       const token = await getToken();

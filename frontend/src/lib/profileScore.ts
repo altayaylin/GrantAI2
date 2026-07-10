@@ -1,4 +1,4 @@
-import type { Achievement, AchievementLevel, AchievementType } from "./types";
+import type { Achievement, AchievementLevel, AchievementPrestige, AchievementType } from "./types";
 
 export type ProfileCategory = "academics" | "activities" | "leadership" | "awards";
 
@@ -29,19 +29,34 @@ const CATEGORY_FALLBACK_WEIGHTS: Record<Achievement["category"], Contribution> =
   award: { awards: 8, academics: 3 },
 };
 
+// Множитель по оценке престижности (ставит ИИ при распознавании документа;
+// для достижений без загруженного файла всегда null → множитель 1.0)
+const PRESTIGE_MULTIPLIERS: Record<AchievementPrestige, number> = {
+  elite: 1.8,
+  strong: 1.3,
+  standard: 1.0,
+  minor: 0.6,
+};
+
 export const CATEGORY_ORDER: ProfileCategory[] = ["academics", "activities", "leadership", "awards"];
 
-function resolveContribution(achievement: Pick<Achievement, "type" | "level" | "category">): Contribution {
-  if (!achievement.type) {
-    return CATEGORY_FALLBACK_WEIGHTS[achievement.category] ?? {};
+function resolveContribution(
+  achievement: Pick<Achievement, "type" | "level" | "category" | "prestige">,
+): Contribution {
+  const base = !achievement.type
+    ? CATEGORY_FALLBACK_WEIGHTS[achievement.category] ?? {}
+    : achievement.type === "olympiad"
+    ? OLYMPIAD_WEIGHTS[achievement.level && OLYMPIAD_WEIGHTS[achievement.level] ? achievement.level : "school"]
+    : TYPE_WEIGHTS[achievement.type] ?? {};
+
+  const multiplier = achievement.prestige ? PRESTIGE_MULTIPLIERS[achievement.prestige] : 1.0;
+  if (multiplier === 1.0) return base;
+
+  const scaled: Contribution = {};
+  for (const key of Object.keys(base) as ProfileCategory[]) {
+    scaled[key] = (base[key] ?? 0) * multiplier;
   }
-  if (achievement.type === "olympiad") {
-    const level = achievement.level && OLYMPIAD_WEIGHTS[achievement.level]
-      ? achievement.level
-      : "school";
-    return OLYMPIAD_WEIGHTS[level];
-  }
-  return TYPE_WEIGHTS[achievement.type] ?? {};
+  return scaled;
 }
 
 // Реальные баллы из профиля (GPA/SAT/IELTS/TOEFL) — база для категории Academics,
@@ -81,7 +96,7 @@ function computeAcademicBase(inputs?: AcademicInputs): number {
 }
 
 export function scoreProfile(
-  achievements: Pick<Achievement, "type" | "level" | "category">[],
+  achievements: Pick<Achievement, "type" | "level" | "category" | "prestige">[],
   academicInputs?: AcademicInputs,
 ): { scores: CategoryScores; overall: number } {
   const scores: CategoryScores = {

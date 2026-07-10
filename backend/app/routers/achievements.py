@@ -24,6 +24,7 @@ TESSERACT_LANG = "rus+eng"
 
 ACHIEVEMENT_TYPES = ("olympiad", "volunteering", "internship", "leadership", "project", "research")
 ACHIEVEMENT_LEVELS = ("school", "city", "national", "international")
+ACHIEVEMENT_PRESTIGE = ("elite", "strong", "standard", "minor")
 
 EXTRACTION_SYSTEM_PROMPT = (
     "Ты помогаешь заполнить профиль школьника по OCR-тексту документа о достижении "
@@ -32,7 +33,8 @@ EXTRACTION_SYSTEM_PROMPT = (
     "Верни ТОЛЬКО JSON вида "
     '{"title": string, "category": "activity" | "award", '
     '"type": "olympiad" | "volunteering" | "internship" | "leadership" | "project" | "research", '
-    '"level": "school" | "city" | "national" | "international" | null, "description": string}. '
+    '"level": "school" | "city" | "national" | "international" | null, '
+    '"prestige": "elite" | "strong" | "standard" | "minor", "description": string}. '
     "category = 'award', если это награда/победа (медаль, диплом победителя, призовое "
     "место); 'activity' — если это участие, активность или волонтёрство без явной победы. "
     "type определи по смыслу документа: 'olympiad' — олимпиада или предметный конкурс, "
@@ -41,9 +43,18 @@ EXTRACTION_SYSTEM_PROMPT = (
     "'research' — исследовательская работа или публикация. level указывай ТОЛЬКО если "
     "type = 'olympiad': 'school' — школьный уровень, 'city' — городской/областной, "
     "'national' — республиканский/национальный, 'international' — международный. Для остальных "
-    "type всегда ставь level = null. title — короткое название (до 80 символов). description — "
-    "1-2 предложения на русском. Если текст слишком скудный или нечитаемый, сделай наилучшее "
-    "предположение, не отказывайся."
+    "type всегда ставь level = null. "
+    "prestige — твоя оценка престижности организации/мероприятия, выдавшего документ, по "
+    "твоим знаниям: 'elite' — всемирно известные топовые организации и конкурсы (Ivy League "
+    "и топ-университеты, IMO/IPhO/IChO и другие международные олимпиады финального уровня, "
+    "стажировки в известных международных компаниях); 'strong' — известные национальные "
+    "университеты, крупные национальные олимпиады и признанные региональные конкурсы; "
+    "'standard' — рядовые школьные, городские или локальные мероприятия без особой "
+    "известности; 'minor' — формальные сертификаты участия без отбора или соревновательного "
+    "элемента (участие ради участия). Если организация тебе незнакома или в тексте недостаточно "
+    "информации, ставь 'standard' — не угадывай наугад в пользу более высокой оценки. "
+    "title — короткое название (до 80 символов). description — 1-2 предложения на русском. "
+    "Если текст слишком скудный или нечитаемый, сделай наилучшее предположение, не отказывайся."
 )
 
 
@@ -121,6 +132,8 @@ async def extract_achievement(
         data["type"] = None
     if data.get("type") != "olympiad" or data.get("level") not in ACHIEVEMENT_LEVELS:
         data["level"] = None
+    if data.get("prestige") not in ACHIEVEMENT_PRESTIGE:
+        data["prestige"] = "standard"
     return data
 
 

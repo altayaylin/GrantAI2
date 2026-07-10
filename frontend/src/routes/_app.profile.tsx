@@ -619,6 +619,13 @@ const ACHIEVEMENT_LEVELS: { value: NonNullable<Achievement["level"]>; label: str
   { value: "international", label: "Международный" },
 ];
 
+const ACHIEVEMENT_PRESTIGE_OPTIONS: { value: NonNullable<Achievement["prestige"]>; label: string }[] = [
+  { value: "elite", label: "Элитный" },
+  { value: "strong", label: "Сильный" },
+  { value: "standard", label: "Стандартный" },
+  { value: "minor", label: "Незначительный" },
+];
+
 function AchievementsCard() {
   const qc = useQueryClient();
   const [manualOpen, setManualOpen] = useState(false);
@@ -717,6 +724,7 @@ function useCreateAchievementMutation(onSaved: () => void) {
       category: Achievement["category"];
       type: Achievement["type"];
       level: Achievement["level"];
+      prestige?: Achievement["prestige"];
       description: string;
       file: File | null;
     }) => {
@@ -733,6 +741,7 @@ function useCreateAchievementMutation(onSaved: () => void) {
         category: vars.category,
         type: vars.type,
         level: vars.type === "olympiad" ? vars.level ?? undefined : undefined,
+        prestige: vars.prestige ?? undefined,
         file_url,
         file_name,
       });
@@ -867,6 +876,7 @@ function FileAchievementDialog({
     category: Achievement["category"];
     type: NonNullable<Achievement["type"]>;
     level: NonNullable<Achievement["level"]>;
+    prestige: NonNullable<Achievement["prestige"]>;
     description: string;
   } | null>(null);
 
@@ -884,6 +894,7 @@ function FileAchievementDialog({
         category: result.category,
         type: result.type ?? "project",
         level: result.level ?? "school",
+        prestige: result.prestige ?? "standard",
         description: result.description,
       });
       toast.success("Данные распознаны — проверь и сохрани");
@@ -990,6 +1001,23 @@ function FileAchievementDialog({
                 </Select>
               </div>
             )}
+            <div className="space-y-1.5">
+              <Label>Престиж (оценка ИИ)</Label>
+              <Select
+                value={recognized.prestige}
+                onValueChange={(v) => setRecognized({ ...recognized, prestige: v as NonNullable<Achievement["prestige"]> })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACHIEVEMENT_PRESTIGE_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Влияет на итоговый балл — проверь и поправь, если ИИ ошибся
+              </p>
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="ach-file-desc">Описание</Label>
               <Textarea

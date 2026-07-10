@@ -63,6 +63,8 @@ export type AchievementType =
 
 export type AchievementLevel = "school" | "city" | "national" | "international";
 
+export type AchievementPrestige = "elite" | "strong" | "standard" | "minor";
+
 export type Achievement = {
   id: string;
   student_id: string;
@@ -71,6 +73,7 @@ export type Achievement = {
   category: "activity" | "award";
   type: AchievementType | null;
   level: AchievementLevel | null;
+  prestige: AchievementPrestige | null;
   file_url: string | null;
   file_name: string | null;
   created_at: string;
