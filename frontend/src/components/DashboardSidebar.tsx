@@ -27,7 +27,7 @@ export function DashboardSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   return (
-    <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+    <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border sticky top-0 h-screen overflow-y-auto">
       <div className="px-6 py-6 border-b border-sidebar-border">
         <Link to="/dashboard" className="flex items-center gap-2.5">
           <img src="/logo.png" alt="GrantAI Logo" className="h-9 w-9 object-contain rounded-xl shadow-[var(--shadow-glow)]" />
@@ -74,19 +74,6 @@ export function DashboardSidebar() {
             <span>{item.title}</span>
           </Link>
         ))}
-
-        <div
-          className="mt-3 p-4 rounded-xl text-white"
-          style={{ background: "var(--gradient-deep)" }}
-        >
-          <div className="text-sm font-semibold">Pro план</div>
-          <div className="text-xs text-white/70 mt-1 mb-3">
-            Безлимит AI оценок и ментор
-          </div>
-          <button className="w-full text-xs font-medium bg-white/15 hover:bg-white/25 transition-colors rounded-md py-1.5">
-            Улучшить
-          </button>
-        </div>
       </div>
     </aside>
   );
