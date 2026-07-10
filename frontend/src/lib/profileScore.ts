@@ -22,10 +22,19 @@ const TYPE_WEIGHTS: Partial<Record<AchievementType, Contribution>> = {
   research: { academics: 15, awards: 8 },
 };
 
+// Запасной вес для достижений без type (добавлены до появления этого поля) —
+// считаем по category, чтобы старые записи тоже участвовали в подсчёте
+const CATEGORY_FALLBACK_WEIGHTS: Record<Achievement["category"], Contribution> = {
+  activity: { activities: 6, leadership: 2 },
+  award: { awards: 8, academics: 3 },
+};
+
 export const CATEGORY_ORDER: ProfileCategory[] = ["academics", "activities", "leadership", "awards"];
 
-function resolveContribution(achievement: Pick<Achievement, "type" | "level">): Contribution {
-  if (!achievement.type) return {};
+function resolveContribution(achievement: Pick<Achievement, "type" | "level" | "category">): Contribution {
+  if (!achievement.type) {
+    return CATEGORY_FALLBACK_WEIGHTS[achievement.category] ?? {};
+  }
   if (achievement.type === "olympiad") {
     const level = achievement.level && OLYMPIAD_WEIGHTS[achievement.level]
       ? achievement.level
@@ -72,7 +81,7 @@ function computeAcademicBase(inputs?: AcademicInputs): number {
 }
 
 export function scoreProfile(
-  achievements: Pick<Achievement, "type" | "level">[],
+  achievements: Pick<Achievement, "type" | "level" | "category">[],
   academicInputs?: AcademicInputs,
 ): { scores: CategoryScores; overall: number } {
   const scores: CategoryScores = {
