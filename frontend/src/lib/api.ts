@@ -99,6 +99,25 @@ export const api = {
       const { data } = supabase.storage.from("achievements").getPublicUrl(path);
       return { url: data.publicUrl, name: file.name };
     },
+    extract: async (file: File): Promise<{
+      title: string;
+      category: "activity" | "award";
+      description: string;
+    }> => {
+      const token = await getToken();
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`${BASE}/achievements/extract`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: form,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API ${res.status}: ${text}`);
+      }
+      return res.json();
+    },
   },
 
   deadlines: {

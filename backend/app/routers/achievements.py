@@ -1,9 +1,54 @@
-from fastapi import APIRouter, HTTPException, Depends
+import io
+import json
+
+import fitz  # PyMuPDF
+import pytesseract
+from openai import OpenAI
+from PIL import Image
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from app.config import settings
 from app.database import supabase
 from app.models.achievement import AchievementCreate
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/achievements", tags=["achievements"])
+
+deepseek_client = OpenAI(
+    api_key=settings.deepseek_api_key,
+    base_url="https://api.deepseek.com",
+)
+
+EXTRACTION_MODEL = "deepseek-v4-flash"
+
+TESSERACT_LANG = "rus+eng"
+
+EXTRACTION_SYSTEM_PROMPT = (
+    "Ты помогаешь заполнить профиль школьника по OCR-тексту документа о достижении "
+    "(сертификат, диплом, грамота, рекомендательное письмо, справка об участии). "
+    "Текст мог быть распознан с ошибками — исправляй очевидные опечатки OCR по смыслу. "
+    "Верни ТОЛЬКО JSON вида "
+    '{"title": string, "category": "activity" | "award", "description": string}. '
+    "category = 'award', если это награда/победа (медаль, диплом победителя, призовое "
+    "место); 'activity' — если это участие, активность или волонтёрство без явной победы. "
+    "title — короткое название (до 80 символов). description — 1-2 предложения на русском. "
+    "Если текст слишком скудный или нечитаемый, сделай наилучшее предположение, не отказывайся."
+)
+
+
+def _ocr_file(content: bytes, media_type: str) -> str:
+    """Извлекает текст из изображения или PDF через Tesseract OCR."""
+    if media_type == "application/pdf":
+        pages = []
+        with fitz.open(stream=content, filetype="pdf") as doc:
+            for page in doc:
+                pix = page.get_pixmap(dpi=200)
+                img = Image.open(io.BytesIO(pix.tobytes("png")))
+                pages.append(pytesseract.image_to_string(img, lang=TESSERACT_LANG))
+        return "\n".join(pages).strip()
+    if media_type.startswith("image/"):
+        img = Image.open(io.BytesIO(content))
+        return pytesseract.image_to_string(img, lang=TESSERACT_LANG).strip()
+    raise HTTPException(status_code=400, detail="Поддерживаются только изображения и PDF")
 
 
 def _count_field(category: str) -> str:
@@ -20,6 +65,47 @@ def _bump_profile_count(user_id: str, category: str, delta: int) -> None:
     supabase.table("profiles").update({field: max(0, current + delta)}).eq(
         "id", user_id
     ).execute()
+
+
+@router.post("/extract")
+async def extract_achievement(
+    file: UploadFile = File(...),
+    user_id: str = Depends(get_current_user),
+):
+    """Распознать достижение из загруженного документа: OCR (Tesseract) + DeepSeek."""
+    content = await file.read()
+    media_type = file.content_type or ""
+
+    ocr_text = _ocr_file(content, media_type)
+    if not ocr_text:
+        raise HTTPException(
+            status_code=400, detail="Не удалось распознать текст в документе"
+        )
+
+    try:
+        response = deepseek_client.chat.completions.create(
+            model=EXTRACTION_MODEL,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+                {"role": "user", "content": f"OCR-текст документа:\n\n{ocr_text}"},
+            ],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Не удалось распознать документ: {e}")
+
+    text = response.choices[0].message.content
+    if not text:
+        raise HTTPException(status_code=400, detail="Пустой ответ от модели распознавания")
+
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Не удалось разобрать ответ модели")
+
+    if data.get("category") not in ("activity", "award"):
+        data["category"] = "activity"
+    return data
 
 
 @router.get("/")

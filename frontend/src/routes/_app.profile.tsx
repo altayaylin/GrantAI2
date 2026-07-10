@@ -690,6 +690,7 @@ function AddAchievementDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const qc = useQueryClient();
+  const [mode, setMode] = useState<"manual" | "auto">("manual");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<Achievement["category"]>("activity");
   const [description, setDescription] = useState("");
@@ -697,11 +698,25 @@ function AddAchievementDialog({
 
   useEffect(() => {
     if (!open) return;
+    setMode("manual");
     setTitle("");
     setCategory("activity");
     setDescription("");
     setFile(null);
   }, [open]);
+
+  const extractMutation = useMutation({
+    mutationFn: (f: File) => api.achievements.extract(f),
+    onSuccess: (result, f) => {
+      setTitle(result.title);
+      setCategory(result.category);
+      setDescription(result.description);
+      setFile(f);
+      setMode("manual");
+      toast.success("Данные распознаны — проверь и сохрани");
+    },
+    onError: () => toast.error("Не удалось распознать документ"),
+  });
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -744,56 +759,93 @@ function AddAchievementDialog({
             Активность, награда, сертификат или диплом — можно приложить файл
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="ach-title">Название</Label>
-            <Input
-              id="ach-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Международная олимпиада по физике"
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Тип</Label>
-            <Select value={category} onValueChange={(v) => setCategory(v as Achievement["category"])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ACHIEVEMENT_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="ach-desc">Описание</Label>
-            <Textarea
-              id="ach-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Коротко опиши, в чём заключалось достижение"
-              rows={3}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="ach-file">Файл (сертификат, диплом, портфолио)</Label>
-            <Input
-              id="ach-file"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="ghost">Отмена</Button>
-            </DialogClose>
-            <Button type="submit" disabled={createMutation.isPending || !title.trim()}>
-              {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Добавить"}
+        <div className="px-6 pt-4">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "manual" | "auto")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="manual">Вручную</TabsTrigger>
+              <TabsTrigger value="auto">Загрузить документ</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {mode === "auto" ? (
+          <div className="px-6 py-5 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="ach-auto-file">Сертификат, диплом, грамота или письмо</Label>
+              <Input
+                id="ach-auto-file"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              <p className="text-xs text-muted-foreground">
+                ИИ прочитает документ и сам заполнит название, тип и описание — их можно будет проверить перед сохранением.
+              </p>
+            </div>
+            <Button
+              type="button"
+              className="w-full"
+              disabled={!file || extractMutation.isPending}
+              onClick={() => file && extractMutation.mutate(file)}
+            >
+              {extractMutation.isPending
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Распознаём…</>
+                : "Распознать документ"}
             </Button>
-          </DialogFooter>
-        </form>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="ach-title">Название</Label>
+              <Input
+                id="ach-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Международная олимпиада по физике"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Тип</Label>
+              <Select value={category} onValueChange={(v) => setCategory(v as Achievement["category"])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACHIEVEMENT_CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ach-desc">Описание</Label>
+              <Textarea
+                id="ach-desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Коротко опиши, в чём заключалось достижение"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ach-file">Файл (сертификат, диплом, портфолио)</Label>
+              <Input
+                id="ach-file"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              {file && <p className="text-xs text-muted-foreground">Прикреплён: {file.name}</p>}
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="ghost">Отмена</Button>
+              </DialogClose>
+              <Button type="submit" disabled={createMutation.isPending || !title.trim()}>
+                {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Добавить"}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
