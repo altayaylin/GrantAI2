@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppUniversitiesRouteImport } from './routes/_app.universities'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppOpportunitiesRouteImport } from './routes/_app.opportunities'
 import { Route as AppDeadlinesRouteImport } from './routes/_app.deadlines'
@@ -49,6 +50,11 @@ const AppUniversitiesRoute = AppUniversitiesRouteImport.update({
   path: '/universities',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/deadlines': typeof AppDeadlinesRoute
   '/opportunities': typeof AppOpportunitiesRoute
   '/profile': typeof AppProfileRoute
+  '/settings': typeof AppSettingsRoute
   '/universities': typeof AppUniversitiesRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/deadlines': typeof AppDeadlinesRoute
   '/opportunities': typeof AppOpportunitiesRoute
   '/profile': typeof AppProfileRoute
+  '/settings': typeof AppSettingsRoute
   '/universities': typeof AppUniversitiesRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_app/deadlines': typeof AppDeadlinesRoute
   '/_app/opportunities': typeof AppOpportunitiesRoute
   '/_app/profile': typeof AppProfileRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/universities': typeof AppUniversitiesRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/deadlines'
     | '/opportunities'
     | '/profile'
+    | '/settings'
     | '/universities'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/deadlines'
     | '/opportunities'
     | '/profile'
+    | '/settings'
     | '/universities'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_app/deadlines'
     | '/_app/opportunities'
     | '/_app/profile'
+    | '/_app/settings'
     | '/_app/universities'
   fileRoutesById: FileRoutesById
 }
@@ -194,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUniversitiesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -230,6 +249,7 @@ interface AppRouteChildren {
   AppDeadlinesRoute: typeof AppDeadlinesRoute
   AppOpportunitiesRoute: typeof AppOpportunitiesRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppUniversitiesRoute: typeof AppUniversitiesRoute
 }
 
@@ -238,6 +258,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDeadlinesRoute: AppDeadlinesRoute,
   AppOpportunitiesRoute: AppOpportunitiesRoute,
   AppProfileRoute: AppProfileRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppUniversitiesRoute: AppUniversitiesRoute,
 }
 
