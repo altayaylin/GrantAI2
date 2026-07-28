@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ListFilter,
   Star,
   Bookmark,
   Calendar,
@@ -57,6 +60,12 @@ function OpportunitiesPage() {
   const [cost, setCost] = useState("");
   const [grade, setGrade] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("deadline");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
+
+  function scrollTabs(direction: 1 | -1) {
+    tabsScrollRef.current?.scrollBy({ left: direction * 180, behavior: "smooth" });
+  }
 
   const { data: profile } = useQuery({
     queryKey: ["profile"],
@@ -213,27 +222,50 @@ function OpportunitiesPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex flex-wrap gap-3">
-        {categories.map((cat) => {
-          const meta = CATEGORY_META[cat.id];
-          const count = scored.filter((s) => s.opp.category === cat.id).length;
-          const Icon = CATEGORY_ICON[cat.id];
-          return (
-            <button
-              key={cat.id}
-              onClick={() => meta.available && setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2.5 rounded-2xl border px-5 py-3 text-sm font-semibold transition-all duration-200 ${
-                selectedCategory === cat.id
-                  ? "bg-[#1A4D9C] border-[#1A4D9C] text-white shadow-lg"
-                  : "bg-card border-border text-muted-foreground hover:bg-accent"
-              } ${!meta.available ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              <Icon className={`h-4 w-4 ${selectedCategory === cat.id ? "text-white" : "text-amber-600"}`} />
-              {cat.name} {count > 0 && <span className="opacity-60 font-mono text-[10px]">{count}</span>}
-              {!meta.available && <span className="text-[9px] uppercase tracking-tighter opacity-50 ml-1">IN DEV</span>}
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-3">
+        <div
+          ref={tabsScrollRef}
+          className="flex flex-nowrap gap-3 overflow-x-auto scroll-smooth sm:flex-wrap sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {categories.map((cat) => {
+            const meta = CATEGORY_META[cat.id];
+            const count = scored.filter((s) => s.opp.category === cat.id).length;
+            const Icon = CATEGORY_ICON[cat.id];
+            return (
+              <button
+                key={cat.id}
+                onClick={() => meta.available && setSelectedCategory(cat.id)}
+                className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-2xl border px-5 py-3 text-sm font-semibold transition-all duration-200 ${
+                  selectedCategory === cat.id
+                    ? "bg-[#1A4D9C] border-[#1A4D9C] text-white shadow-lg"
+                    : "bg-card border-border text-muted-foreground hover:bg-accent"
+                } ${!meta.available ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                <Icon className={`h-4 w-4 ${selectedCategory === cat.id ? "text-white" : "text-amber-600"}`} />
+                {cat.name} {count > 0 && <span className="opacity-60 font-mono text-[10px]">{count}</span>}
+                {!meta.available && <span className="text-[9px] uppercase tracking-tighter opacity-50 ml-1">IN DEV</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bottom nav row — phones only: scroll the tab strip above without swiping */}
+        <div className="flex items-center justify-center gap-3 sm:hidden">
+          <button
+            onClick={() => scrollTabs(-1)}
+            aria-label="Прокрутить вкладки влево"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition-transform active:scale-95"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => scrollTabs(1)}
+            aria-label="Прокрутить вкладки вправо"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition-transform active:scale-95"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -246,44 +278,64 @@ function OpportunitiesPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Название, организация, тег"
-              className="w-full h-12 rounded-2xl bg-background border border-border pl-11 pr-4 text-sm focus:outline-none focus:border-[#1A4D9C] focus:ring-4 focus:ring-blue-100 transition-all font-medium"
-            />
+          <div className="flex flex-1 min-w-[300px] items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Название, организация, тег"
+                className="w-full h-12 rounded-2xl bg-background border border-border pl-11 pr-4 text-sm focus:outline-none focus:border-[#1A4D9C] focus:ring-4 focus:ring-blue-100 transition-all font-medium"
+              />
+            </div>
+            <button
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-label="Показать все фильтры"
+              aria-expanded={filtersOpen}
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-all active:scale-95 sm:hidden ${
+                filtersOpen
+                  ? "bg-[#1A4D9C] border-[#1A4D9C] text-white"
+                  : "bg-background border-border text-muted-foreground"
+              }`}
+            >
+              <ListFilter className="h-5 w-5" />
+            </button>
           </div>
 
-          <FilterSelect value={country} onChange={setCountry} placeholder="Все страны" options={countryOptions.map((c) => ({ value: c, label: c }))} />
-          <FilterSelect
-            value={format}
-            onChange={setFormat}
-            placeholder="Любой формат"
-            options={[
-              { value: "Онлайн", label: "Онлайн" },
-              { value: "Офлайн", label: "Офлайн" },
-              { value: "Гибрид", label: "Гибрид" },
-            ]}
-          />
-          <FilterSelect
-            value={cost}
-            onChange={setCost}
-            placeholder="Любая стоимость"
-            options={[
-              { value: "free", label: "Бесплатно" },
-              { value: "stipend", label: "Оплачиваемая" },
-              { value: "paid", label: "Платная" },
-            ]}
-          />
-          <FilterSelect
-            value={grade}
-            onChange={setGrade}
-            placeholder="Любой класс"
-            options={[9, 10, 11, 12].map((g) => ({ value: String(g), label: `${g} класс` }))}
-          />
+          <div
+            className={`w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-1 sm:flex-wrap sm:gap-4 ${
+              filtersOpen ? "grid" : "hidden sm:flex"
+            }`}
+          >
+            <FilterSelect value={country} onChange={setCountry} placeholder="Все страны" options={countryOptions.map((c) => ({ value: c, label: c }))} />
+            <FilterSelect
+              value={format}
+              onChange={setFormat}
+              placeholder="Любой формат"
+              options={[
+                { value: "Онлайн", label: "Онлайн" },
+                { value: "Офлайн", label: "Офлайн" },
+                { value: "Гибрид", label: "Гибрид" },
+              ]}
+            />
+            <FilterSelect
+              value={cost}
+              onChange={setCost}
+              placeholder="Любая стоимость"
+              options={[
+                { value: "free", label: "Бесплатно" },
+                { value: "stipend", label: "Оплачиваемая" },
+                { value: "paid", label: "Платная" },
+              ]}
+            />
+            <FilterSelect
+              value={grade}
+              onChange={setGrade}
+              placeholder="Любой класс"
+              options={[9, 10, 11, 12].map((g) => ({ value: String(g), label: `${g} класс` }))}
+            />
+          </div>
         </div>
 
         <div className="mt-8 flex items-center justify-between border-t border-border/50 pt-4">
@@ -321,7 +373,54 @@ function OpportunitiesPage() {
           Ничего не найдено — попробуй другой запрос или сбрось фильтры.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <>
+        {/* Compact grid — phones only: 2 columns so ~4 activities fit on screen at once */}
+        <div className="grid grid-cols-2 gap-3.5 sm:hidden">
+          {filtered.map(({ opp, fit }) => {
+            const isFav = favorites.has(opp.id);
+            const CatIcon = CATEGORY_ICON[opp.category];
+            return (
+              <div
+                key={opp.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedOpp(opp)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setSelectedOpp(opp);
+                }}
+                className="flex min-h-[168px] flex-col rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-transform active:scale-[0.97]"
+              >
+                <div className="flex items-start justify-between gap-1">
+                  <span className="inline-flex items-center rounded-md bg-indigo-100 p-1.5 text-indigo-700">
+                    <CatIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      favorites.toggle(opp.id);
+                    }}
+                    className={`rounded-lg p-1 ${isFav ? "text-amber-500" : "text-muted-foreground"}`}
+                  >
+                    <Bookmark className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+                  </button>
+                </div>
+                <h4 className="mt-2.5 line-clamp-2 text-[14px] font-bold leading-snug text-foreground">{opp.title}</h4>
+                <p className="mt-1 line-clamp-1 text-[11px] font-medium text-muted-foreground">{opp.org}</p>
+                <div className="mt-auto flex items-center justify-between pt-3">
+                  <div className="flex text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-3 w-3 ${i < (opp.prestige ?? 0) ? "fill-current" : "text-gray-200"}`} />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-600">{fit.score}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Detailed grid — tablet & desktop */}
+        <div className="hidden gap-8 sm:grid sm:grid-cols-1 lg:grid-cols-2">
           {filtered.map(({ opp, fit }) => {
             const isFav = favorites.has(opp.id);
             const isMine = mine.has(opp.id);
@@ -425,6 +524,7 @@ function OpportunitiesPage() {
             );
           })}
         </div>
+        </>
       )}
 
       {/* Details Modal */}
@@ -610,11 +710,11 @@ function FilterSelect({
   hideClear?: boolean;
 }) {
   return (
-    <div className="relative">
+    <div className="relative w-full sm:w-auto">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none flex items-center gap-3 rounded-2xl bg-background border border-border pl-5 pr-9 h-12 text-sm font-medium hover:bg-accent transition-all shadow-sm cursor-pointer focus:outline-none focus:border-[#1A4D9C] max-w-[200px]"
+        className="appearance-none flex w-full items-center gap-3 rounded-2xl bg-background border border-border pl-5 pr-9 h-12 text-sm font-medium hover:bg-accent transition-all shadow-sm cursor-pointer focus:outline-none focus:border-[#1A4D9C] sm:w-auto sm:max-w-[200px]"
       >
         {!hideClear && <option value="">{placeholder}</option>}
         {options.map((o) => (
