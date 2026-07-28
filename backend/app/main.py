@@ -4,7 +4,7 @@ from app.config import settings
 from app.routers import universities, profiles, deadlines, activities, achievements
 
 app = FastAPI(
-    title="GrantAI API",
+    title="Naviuni API",
     description="Бэкенд для подбора университетов и управления профилем студента",
     version="0.1.0",
 )
@@ -19,6 +19,8 @@ app.add_middleware(
         "http://localhost:8082",
         "http://localhost:8083",
         "https://grant-ai-2.vercel.app",
+        "https://naviuni.org",
+        "https://www.naviuni.org",
         *settings.cors_origin_list,
     ],
     allow_credentials=True,
@@ -35,4 +37,4 @@ app.include_router(achievements.router)
 
 @app.get("/")
 def root():
-    return {"status": "GrantAI API работает", "docs": "/docs"}
+    return {"status": "Naviuni API работает", "docs": "/docs"}

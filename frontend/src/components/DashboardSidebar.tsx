@@ -30,9 +30,9 @@ export function DashboardSidebar() {
     <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border sticky top-0 h-screen overflow-y-auto">
       <div className="px-6 py-6 border-b border-sidebar-border">
         <Link to="/dashboard" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="GrantAI Logo" className="h-9 w-9 object-contain rounded-xl shadow-[var(--shadow-glow)]" />
+          <img src="/logo.png" alt="Naviuni Logo" className="h-9 w-9 object-contain rounded-xl shadow-[var(--shadow-glow)]" />
           <div className="leading-tight">
-            <div className="font-semibold text-base">GrantAI</div>
+            <div className="font-semibold text-base">Naviuni</div>
             <div className="text-[11px] text-sidebar-foreground/60">
               Поступай умнее
             </div>

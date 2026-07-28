@@ -1,0 +1,109 @@
+<!--
+  Naviuni — email "Подтвердите регистрацию" (Supabase Auth → Authentication → Email Templates → Confirm signup).
+  Paste this whole file into the "Message body" field there. Supabase replaces {{ .ConfirmationURL }} with the
+  real confirmation link at send time — leave that placeholder as-is. Sent via Resend (custom SMTP).
+-->
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="supported-color-schemes" content="dark light" />
+  <title>Подтвердите почту — Naviuni</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0A0E17; -webkit-text-size-adjust:100%; text-size-adjust:100%;">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+    Подтвердите свою почту, чтобы открыть личный кабинет Naviuni.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0A0E17;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" style="width:480px; max-width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #97C3F2 0%, #4694E7 45%, #1866B9 100%); background-color:#4694E7; text-align:center; vertical-align:middle;">
+                    <span style="font-family:'Segoe UI', Arial, sans-serif; font-size:18px; font-weight:800; color:#0A0E17; line-height:36px;">N</span>
+                  </td>
+                  <td style="padding-left:10px; font-family:'Segoe UI', Arial, sans-serif; font-size:20px; font-weight:700; color:#EDF1F7;">
+                    Naviuni
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#111725; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:36px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:20px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="width:56px; height:56px; border-radius:9999px; background-color:rgba(59,130,246,0.12); text-align:center; vertical-align:middle;">
+                          <span style="font-size:24px; line-height:56px;">&#9993;&#65039;</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Segoe UI', Arial, sans-serif; font-size:22px; font-weight:700; color:#EDF1F7; padding-bottom:12px;">
+                    Подтвердите свою почту
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Segoe UI', Arial, sans-serif; font-size:14px; line-height:22px; color:#8B94A7; padding-bottom:28px;">
+                    Вы регистрируетесь в Naviuni. Чтобы завершить регистрацию и открыть личный кабинет, подтвердите адрес почты — нажмите на кнопку ниже.
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-bottom:24px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius:12px; background:linear-gradient(135deg, #97C3F2 0%, #4694E7 45%, #1866B9 100%); background-color:#3B82F6;">
+                          <a href="{{ .ConfirmationURL }}"
+                             target="_blank"
+                             style="display:inline-block; padding:14px 32px; font-family:'Segoe UI', Arial, sans-serif; font-size:15px; font-weight:600; color:#0A0E17; text-decoration:none; border-radius:12px;">
+                            Подтвердить почту
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; line-height:20px; color:#4A5168; padding-bottom:6px;">
+                    Кнопка не работает? Скопируйте и вставьте эту ссылку в браузер:
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; line-height:20px; word-break:break-all;">
+                    <a href="{{ .ConfirmationURL }}" style="color:#60A5FA; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-top:28px; font-family:'Segoe UI', Arial, sans-serif; font-size:12px; line-height:20px; color:#4A5168;">
+              Если вы не регистрировались в Naviuni, просто проигнорируйте это письмо.
+              <br />
+              © 2026 Naviuni. Сделано в Казахстане &#127472;&#127487;
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

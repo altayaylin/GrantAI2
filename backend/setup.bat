@@ -1,6 +1,6 @@
 @echo off
 echo ════════════════════════════════════════════
-echo   GrantAI Backend — запуск
+echo   Naviuni Backend — запуск
 echo ════════════════════════════════════════════
 
 :: Проверяем Python

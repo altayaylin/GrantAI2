@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { Sparkles, ArrowLeft, Mail, Lock, User, ArrowRight } from "lucide-react";
@@ -15,7 +15,19 @@ type FormMode = "login" | "register";
 
 export function AuthPage() {
   const [mode, setMode] = useState<FormMode>("register");
+  const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
+
+  // Already logged in (e.g. returning visitor) — skip the form and go straight to the dashboard.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate({ to: "/dashboard" });
+      } else {
+        setCheckingSession(false);
+      }
+    });
+  }, [navigate]);
 
   const {
     register,
@@ -49,27 +61,42 @@ export function AuthPage() {
     }
   };
 
+  if (checkingSession) {
+    return <div className="landing-theme min-h-screen" />;
+  }
+
   const onSubmit = async (formData: any) => {
     try {
       if (mode === "register") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
               full_name: formData.name,
             },
+            emailRedirectTo: window.location.origin + "/dashboard",
           },
         });
         if (error) throw error;
-        toast.success("Регистрация успешна! Проверьте email для подтверждения.");
-        navigate({ to: "/onboarding" });
+        if (data.session) {
+          toast.success("Регистрация успешна!");
+          navigate({ to: "/onboarding" });
+        } else {
+          navigate({ to: "/confirm-email", search: { email: formData.email } });
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.code === "email_not_confirmed" || /email not confirmed/i.test(error.message)) {
+            navigate({ to: "/confirm-email", search: { email: formData.email } });
+            return;
+          }
+          throw error;
+        }
         toast.success("Вход выполнен успешно!");
         navigate({ to: "/dashboard" });
       }
@@ -106,9 +133,9 @@ export function AuthPage() {
           {/* Logo element */}
           <div className="flex flex-col items-center text-center mb-8">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo.png" alt="GrantAI Logo" className="h-10 w-10 object-contain rounded-xl" />
+              <img src="/logo.png" alt="Naviuni Logo" className="h-10 w-10 object-contain rounded-xl" />
               <span className="font-display font-bold text-xl text-[var(--text-primary)]">
-                GrantAI
+                Naviuni
               </span>
             </Link>
             <h2 className="text-2xl font-bold font-display text-[var(--text-primary)]">
@@ -248,7 +275,7 @@ export function AuthPage() {
 
       {/* Footer copyright */}
       <div className="max-w-7xl mx-auto w-full text-center text-xs text-[var(--text-muted)] mt-8">
-        © {new Date().getFullYear()} GrantAI. Все права защищены. Сделано в Казахстане 🇰🇿
+        © {new Date().getFullYear()} Naviuni. Все права защищены. Сделано в Казахстане 🇰🇿
       </div>
     </div>
   );

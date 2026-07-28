@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
+import { BottomNav } from "@/components/BottomNav";
 import { Bell, Search, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { api } from "@/lib/api";
@@ -40,6 +41,12 @@ function AppLayout() {
     retry: false,
     enabled: sessionChecked && !!user,
   });
+
+  useEffect(() => {
+    if (sessionChecked && !user) {
+      navigate({ to: "/auth" });
+    }
+  }, [sessionChecked, user, navigate]);
 
   useEffect(() => {
     if (sessionChecked && user && !profileLoading && noProfile && pathname !== "/onboarding") {
@@ -94,10 +101,11 @@ function AppLayout() {
             </button>
           </div>
         </header>
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 px-6 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-8 lg:pt-8">
           <Outlet />
         </main>
       </div>
+      <BottomNav />
     </div>
   );
 }

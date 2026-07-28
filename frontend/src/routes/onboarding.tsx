@@ -96,7 +96,7 @@ function OnboardingPage() {
 
   const saveMutation = useMutation({
     mutationFn: (data: Partial<Profile>) => api.profile.save(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onSuccess: (profile) => qc.setQueryData(["profile"], profile),
   });
 
   function toggleCountry(c: string) {
@@ -478,7 +478,7 @@ function OnboardingPage() {
       </div>
 
       <div className="max-w-7xl mx-auto w-full text-center text-xs text-[var(--text-muted)] mt-8">
-        © {new Date().getFullYear()} GrantAI. Все права защищены.
+        © {new Date().getFullYear()} Naviuni. Все права защищены.
       </div>
     </div>
   );

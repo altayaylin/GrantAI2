@@ -35,12 +35,12 @@ export function Navbar() {
         <Link to="/" className="flex items-center gap-2.5 group">
           <img 
             src="/logo.png" 
-            alt="GrantAI Logo" 
+            alt="Naviuni Logo" 
             className="h-9 w-9 object-contain rounded-xl transition-transform group-hover:scale-105" 
           />
           <div className="leading-tight">
             <span className="font-display font-bold text-lg text-[var(--text-primary)]">
-              GrantAI
+              Naviuni
             </span>
           </div>
         </Link>

@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { supabase } from "../lib/supabase";
 import { Navbar } from "../components/sections/Navbar";
 import { Hero } from "../components/sections/Hero";
 import { Stats } from "../components/sections/Stats";
@@ -15,6 +17,15 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
+  const navigate = useNavigate();
+
+  // Already logged in (e.g. returning visitor) — skip the landing page and go straight to the dashboard.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate({ to: "/dashboard" });
+    });
+  }, [navigate]);
+
   return (
     <div className="landing-theme min-h-screen">
       <Navbar />

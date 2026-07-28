@@ -65,7 +65,7 @@ export function Hero() {
             variants={itemVariants}
             className="mt-6 text-[16px] sm:text-[17px] text-[var(--text-secondary)] max-w-xl leading-[1.6]"
           >
-            GrantAI анализирует твой профиль, подбирает университеты и составляет
+            Naviuni анализирует твой профиль, подбирает университеты и составляет
             чёткий план действий — так, чтобы ты точно знал, что делать завтра.
           </motion.p>
 

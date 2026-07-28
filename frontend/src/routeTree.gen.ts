@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ConfirmEmailRouteImport } from './routes/confirm-email'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +23,11 @@ import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmEmailRoute = ConfirmEmailRouteImport.update({
+  id: '/confirm-email',
+  path: '/confirm-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -67,6 +73,7 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/confirm-email': typeof ConfirmEmailRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof AppDashboardRoute
   '/deadlines': typeof AppDeadlinesRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/confirm-email': typeof ConfirmEmailRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof AppDashboardRoute
   '/deadlines': typeof AppDeadlinesRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/confirm-email': typeof ConfirmEmailRoute
   '/onboarding': typeof OnboardingRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/deadlines': typeof AppDeadlinesRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/confirm-email'
     | '/onboarding'
     | '/dashboard'
     | '/deadlines'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/confirm-email'
     | '/onboarding'
     | '/dashboard'
     | '/deadlines'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/auth'
+    | '/confirm-email'
     | '/onboarding'
     | '/_app/dashboard'
     | '/_app/deadlines'
@@ -134,6 +146,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ConfirmEmailRoute: typeof ConfirmEmailRoute
   OnboardingRoute: typeof OnboardingRoute
 }
 
@@ -144,6 +157,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirm-email': {
+      id: '/confirm-email'
+      path: '/confirm-email'
+      fullPath: '/confirm-email'
+      preLoaderRoute: typeof ConfirmEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -227,6 +247,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ConfirmEmailRoute: ConfirmEmailRoute,
   OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport

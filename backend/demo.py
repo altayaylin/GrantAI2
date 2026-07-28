@@ -107,7 +107,7 @@ def print_separator(char="─", width=70):
 
 def run_demo():
     print_separator("═")
-    print(" GrantAI — Демо движка подбора университетов")
+    print(" Naviuni — Демо движка подбора университетов")
     print_separator("═")
     print(f" Университетов в базе: {len(UNIVERSITIES)}")
     print(f" Студентов для теста:  {len(STUDENTS)}")

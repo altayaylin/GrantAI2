@@ -8,7 +8,7 @@ export function Testimonials() {
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeader
           badge="Отзывы"
-          title="Ученики, которые уже используют GrantAI"
+          title="Ученики, которые уже используют Naviuni"
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">

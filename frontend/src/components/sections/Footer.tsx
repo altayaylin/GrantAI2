@@ -12,11 +12,11 @@ export function Footer() {
             <Link to="/" className="flex items-center gap-2 group">
               <img 
                 src="/logo.png" 
-                alt="GrantAI Logo" 
+                alt="Naviuni Logo" 
                 className="h-9 w-9 object-contain rounded-xl transition-transform group-hover:scale-105" 
               />
               <span className="font-display font-bold text-lg text-[var(--text-primary)]">
-                GrantAI
+                Naviuni
               </span>
             </Link>
             <p className="text-xs leading-relaxed max-w-xs text-[var(--text-muted)]">
@@ -67,7 +67,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[var(--text-muted)]">
           <div>
-            © {currentYear} GrantAI. Сделано в Казахстане 🇰🇿
+            © {currentYear} Naviuni. Сделано в Казахстане 🇰🇿
           </div>
           <div className="flex gap-6">
             <span className="cursor-pointer hover:text-[var(--text-secondary)]">Конфиденциальность</span>
