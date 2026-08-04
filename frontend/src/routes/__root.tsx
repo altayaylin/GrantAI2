@@ -77,13 +77,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Naviuni" },
       { name: "description", content: "Naviuni — подбор университетов и AI-планирование поступления" },
       { name: "author", content: "Naviuni" },
+      { property: "og:site_name", content: "Naviuni" },
       { property: "og:title", content: "Naviuni" },
       { property: "og:description", content: "Naviuni — подбор университетов и AI-планирование поступления" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/logo.png" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Naviuni" },
+      { name: "twitter:title", content: "Naviuni" },
+      { name: "twitter:description", content: "Naviuni — подбор университетов и AI-планирование поступления" },
+      { name: "twitter:image", content: "/logo.png" },
+      { name: "application-name", content: "Naviuni" },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/logo.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/logo.png",
+      },
       {
         rel: "preconnect",
         href: "https://fonts.googleapis.com",
