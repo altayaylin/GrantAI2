@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   TrendingUp, CalendarClock, GraduationCap, Sparkles,
@@ -7,6 +8,7 @@ import {
 import { api } from "@/lib/api";
 import { formatAcceptance, type MatchResult, type MyListItem, type Deadline } from "@/lib/types";
 import { LEVEL_META } from "@/lib/target-unis";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: Overview,
@@ -20,6 +22,16 @@ const tierStyle: Record<string, string> = {
 
 function Overview() {
   const qc = useQueryClient();
+  const search = useSearch({ strict: false }) as { upgraded?: string };
+
+  useEffect(() => {
+    if (search.upgraded === "1") {
+      toast.success("Поздравляем! Ваш аккаунт успешно обновлен до Naviuni Pro 🎉");
+      qc.invalidateQueries({ queryKey: ["billing-status"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    }
+  }, [search.upgraded, qc]);
+
 
   const { data: profile } = useQuery({
     queryKey: ["profile"],

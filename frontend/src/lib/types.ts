@@ -51,6 +51,7 @@ export type Profile = {
   toefl: number | null;
   activities_count: number;
   awards_count: number;
+  is_pro?: boolean;
 };
 
 export type AchievementType =

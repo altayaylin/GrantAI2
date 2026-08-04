@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import universities, profiles, deadlines, activities, achievements
+from app.routers import universities, profiles, deadlines, activities, achievements, billing
 
 app = FastAPI(
     title="Naviuni API",
@@ -33,8 +33,15 @@ app.include_router(profiles.router)
 app.include_router(deadlines.router)
 app.include_router(activities.router)
 app.include_router(achievements.router)
+app.include_router(billing.router)
 
 
 @app.get("/")
 def root():
     return {"status": "Naviuni API работает", "docs": "/docs"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+

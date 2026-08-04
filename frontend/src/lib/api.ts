@@ -135,4 +135,12 @@ export const api = {
     delete: (id: string): Promise<{ status: string }> =>
       apiFetch(`/deadlines/${id}`, { method: "DELETE" }),
   },
+
+  billing: {
+    status: (): Promise<{ is_pro: boolean; pro_current_period_end: string | null }> =>
+      apiFetch("/billing/status"),
+    checkout: (): Promise<{ url: string }> =>
+      apiFetch("/billing/checkout", { method: "POST" }),
+  },
 };
+

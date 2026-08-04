@@ -8,7 +8,12 @@ import {
   Compass,
   Settings,
   LifeBuoy,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 const nav = [
   { title: "Обзор", url: "/dashboard", icon: LayoutDashboard },
@@ -25,6 +30,27 @@ const bottom = [
 
 export function DashboardSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  const { data: billingStatus } = useQuery({
+    queryKey: ["billing-status"],
+    queryFn: () => api.billing.status(),
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: () => api.billing.checkout(),
+    onSuccess: (data) => {
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Не удалось получить ссылку на оплату");
+      }
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Ошибка при создании сессии оплаты");
+    },
+  });
+
+  const isPro = billingStatus?.is_pro ?? false;
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border sticky top-0 h-screen overflow-y-auto">
@@ -63,6 +89,38 @@ export function DashboardSidebar() {
         })}
       </nav>
 
+      {/* Pro Badge / Upgrade Prompt */}
+      <div className="px-3 py-3">
+        {isPro ? (
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            <span className="font-semibold">Naviuni Pro активен</span>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-4 space-y-2.5">
+            <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span>Перейди на Pro</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Неограниченный AI подбор и аналитика университетов.
+            </p>
+            <button
+              onClick={() => checkoutMutation.mutate()}
+              disabled={checkoutMutation.isPending}
+              className="w-full text-xs font-semibold py-2 px-3 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+            >
+              {checkoutMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              {checkoutMutation.isPending ? "Загрузка..." : "Оформить Pro"}
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
         {bottom.map((item) => (
           <Link
@@ -78,3 +136,4 @@ export function DashboardSidebar() {
     </aside>
   );
 }
+
