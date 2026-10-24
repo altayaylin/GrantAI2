@@ -35,12 +35,17 @@ function AppLayout() {
   }, []);
 
   // New users (incl. Google sign-up) land here without a profile row yet — send them to onboarding once.
-  const { isError: noProfile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isError: profileErrored, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: () => api.profile.get(),
     retry: false,
     enabled: sessionChecked && !!user,
+    staleTime: 60 * 1000,
   });
+  // Only treat this as "no profile" when we have no cached data at all — a profile set via
+  // onboarding's skip/finish (qc.setQueryData) can trigger a background refetch that blips,
+  // which must not bounce a user who already has a profile back to /onboarding.
+  const noProfile = profileErrored && !profile;
 
   useEffect(() => {
     if (sessionChecked && !user) {
